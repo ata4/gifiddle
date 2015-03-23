@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>GIFLab</title>
+        <meta charset="utf-8">
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!-- Remote libraries -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+        
+        <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+        
+        <!-- Local libraries -->
+        <link rel="stylesheet" href="lib/css/range.css">
+        <link rel="stylesheet" href="lib/css/hint.min.css">
+        
+        <script src="lib/js/minivents.js"></script>
+        
+        <!-- Local site -->
+        <link rel="stylesheet" href="css/giflab.css">
+        <script src="js/stream.js"></script>
+        <script src="js/gifparser.js"></script>
+        <script src="js/gifloader.js"></script>
+        <script src="js/gifplayer.js"></script>
+        <script src="js/giflab.js"></script>
+        
+    </head>
+    <body>
+        <canvas id="viewport" width="640" height="480"></canvas>
+        
+        <nav id="toolbar" class="flex-container navbar navbar-default navbar-fixed-bottom">
+            
+            <div id="tb-menu" class="flex">
+                <div class="container-fluid">
+                    <div class="navbar-header">
+                        <a class="navbar-brand" href="#">GIFLab</a>
+                    </div>
+                    <div class="collapse navbar-collapse">
+                        <ul class="nav navbar-nav">
+                            <li class="dropdown">
+                                <a id="drop1" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
+                                    Open <span class="caret"></span>
+                                </a>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li role="presentation">
+                                        <a role="menuitem" tabindex="-1" href="#" class="file-link">Local file</a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a role="menuitem" tabindex="-1" href="#">Remote URL</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="tb-ctl" class="flex-container">
+                <div id="tb-ctl-btns">
+                    <div class="btn-group" role="group">
+                        <button type="button" data-command="toggle" class="btn btn-default">
+                            <i class="glyphicon glyphicon-play icon-play"></i>
+                            <i class="glyphicon glyphicon-pause icon-pause"></i>
+                        </button>
+                        <button type="button" data-command="setFirst" class="btn btn-default"><i class="glyphicon glyphicon-fast-backward"></i></button>
+                        <button type="button" data-command="setPrevious" class="btn btn-default"><i class="glyphicon glyphicon-step-backward"></i></button>
+                        <button type="button" data-command="setNext" class="btn btn-default"><i class="glyphicon glyphicon-step-forward"></i></button>
+                        <button type="button" data-command="setLast" class="btn btn-default"><i class="glyphicon glyphicon-fast-forward"></i></button>
+                    </div>
+                </div>
+
+                <div id="tb-ctl-sldr" class="hint--top hint--rounded" data-hint="0">
+                    <input type="range" min="0" max="0">
+                </div>
+            </div>
+
+            <div class="flex">
+                
+            </div>
+        </nav>
+    </body>
+</html>
