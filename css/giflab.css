@@ -8,8 +8,12 @@
     flex: 1;
 }
 
+.form-menu {
+    width: 14em;
+    padding: 0 1em;
+}
+
 #viewport {
-    display: flex;
     position: absolute;
     margin: auto;
     padding: 0;

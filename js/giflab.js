@@ -9,6 +9,12 @@ $(function() {
 function GifLab() {
     
     var domViewport = $('#viewport');
+    domViewport.hide();
+    
+    //Handles menu drop down
+    $('.form-menu').click(function (e) {
+        e.stopPropagation();
+    });
     
     return {
         events: new Events(),
@@ -49,6 +55,21 @@ function GifLabMenu(gifLab) {
     domFileLink.on('click', function(event) {
         domFileInput.trigger('click');
     });
+    
+    var domCheckboxRenderRaw = domToolbarMenu.find('#checkbox-render-raw');
+
+    gifLab.events.on('initPlayer', function(gifPlayer) {
+        domCheckboxRenderRaw.off();
+        domCheckboxRenderRaw.on('change', function(event) {
+            if (gifPlayer.isReady()) {
+                gifPlayer.setRenderRaw(event.target.checked);
+            }
+        });
+        
+        gifPlayer.events.on('ready', function() {
+            gifPlayer.setRenderRaw(domCheckboxRenderRaw.prop('checked'));
+        })
+    });
 }
 
 function GifLabControls(gifLab) {
@@ -80,7 +101,10 @@ function GifLabControls(gifLab) {
     }
     
     // hide controls on default
-//    domControls.hide();
+    domControls.hide();
+    
+    // start in "paused" state
+    updateIcon(false);
     
     gifLab.events.on('initPlayer', function(gifPlayer) {
         
