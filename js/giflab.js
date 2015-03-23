@@ -33,7 +33,7 @@ function GifLab() {
 
 function GifLabMenu(gifLab) {
     
-    var domToolbarMenu = $('#tb-menu');
+    var domToolbarMenu = $('#toolbar-menu');
     var domFileLink = domToolbarMenu.find('.file-link');
     var domFileInput = $('<input type="file">');
     
@@ -53,14 +53,17 @@ function GifLabMenu(gifLab) {
 
 function GifLabControls(gifLab) {
     
-    var domControls = $('#tb-ctl');
-    var domButtons = $('#tb-ctl-btns button[data-command]');
+    var domControls = $('#toolbar-controls');
+    var domButtons = domControls.find('button[data-command]');
     
     var domIconPlay = domButtons.find('.icon-play');
     var domIconPause = domButtons.find('.icon-pause');
     
-    var domSliderContainer = $('#tb-ctl-sldr');
-    var domSlider = domSliderContainer.find('input[type="range"]');
+    var domSliderContainer = domControls.find('.slider-container');
+    var domSlider = domSliderContainer.find('.slider');
+    
+    var domSliderValueContainer = domControls.find('.slider-value-container');
+    var domSliderValue = domSliderValueContainer.find('.slider-value');
     
     function updateIcon(playing) {
         if (playing) {
@@ -73,11 +76,11 @@ function GifLabControls(gifLab) {
     }
     
     function updateTooltip(frameIndex) {
-        domSliderContainer.attr('data-hint', frameIndex);
+        domSliderValue.html(frameIndex);
     }
     
     // hide controls on default
-    domControls.hide();
+//    domControls.hide();
     
     gifLab.events.on('initPlayer', function(gifPlayer) {
         

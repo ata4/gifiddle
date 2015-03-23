@@ -1,3 +1,13 @@
+.flex-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex {
+    flex: 1;
+}
+
 #viewport {
     display: flex;
     position: absolute;
@@ -10,22 +20,11 @@
     background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEX////MzMw46qqDAAAAEElEQVQI12Ng+M+AFeEQBgB+vw/xWs16mgAAAABJRU5ErkJggg==');
 }
 
-#tb-ctl-sldr {
+#toolbar-controls .slider {
     width: 16em;
     margin: 0 1em;
 }
 
-#tb-ctl-sldr::after {
-    min-width: 4em;
-    text-align: center;
-}
-
-.flex-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.flex {
-    flex: 1;
+#toolbar-controls .slider-value {
+    width: 4em;
 }

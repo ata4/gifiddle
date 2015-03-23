@@ -7,19 +7,20 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <!-- Remote libraries -->
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.4/slate/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
         
         <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
         
         <!-- Local libraries -->
         <link rel="stylesheet" href="lib/css/range.css">
-        <link rel="stylesheet" href="lib/css/hint.min.css">
         
         <script src="lib/js/minivents.js"></script>
         
         <!-- Local site -->
         <link rel="stylesheet" href="css/giflab.css">
+        
         <script src="js/stream.js"></script>
         <script src="js/gifparser.js"></script>
         <script src="js/gifloader.js"></script>
@@ -32,7 +33,7 @@
         
         <nav id="toolbar" class="flex-container navbar navbar-default navbar-fixed-bottom">
             
-            <div id="tb-menu" class="flex">
+            <div id="toolbar-menu" class="flex">
                 <div class="container-fluid">
                     <div class="navbar-header">
                         <a class="navbar-brand" href="#">GIFLab</a>
@@ -57,22 +58,24 @@
                 </div>
             </div>
             
-            <div id="tb-ctl" class="flex-container">
-                <div id="tb-ctl-btns">
-                    <div class="btn-group" role="group">
-                        <button type="button" data-command="toggle" class="btn btn-default">
-                            <i class="glyphicon glyphicon-play icon-play"></i>
-                            <i class="glyphicon glyphicon-pause icon-pause"></i>
-                        </button>
-                        <button type="button" data-command="setFirst" class="btn btn-default"><i class="glyphicon glyphicon-fast-backward"></i></button>
-                        <button type="button" data-command="setPrevious" class="btn btn-default"><i class="glyphicon glyphicon-step-backward"></i></button>
-                        <button type="button" data-command="setNext" class="btn btn-default"><i class="glyphicon glyphicon-step-forward"></i></button>
-                        <button type="button" data-command="setLast" class="btn btn-default"><i class="glyphicon glyphicon-fast-forward"></i></button>
-                    </div>
+            <div id="toolbar-controls" class="flex-container">
+                <div class="buttons btn-group" role="group">
+                    <button type="button" data-command="toggle" class="btn btn-default">
+                        <i class="fa fa-play icon-play"></i>
+                        <i class="fa fa-pause icon-pause"></i>
+                    </button>
+                    <button type="button" data-command="setFirst" class="btn btn-default"><i class="fa fa-fast-backward"></i></button>
+                    <button type="button" data-command="setPrevious" class="btn btn-default"><i class="fa fa-step-backward"></i></button>
+                    <button type="button" data-command="setNext" class="btn btn-default"><i class="fa fa-step-forward"></i></button>
+                    <button type="button" data-command="setLast" class="btn btn-default"><i class="fa fa-fast-forward"></i></button>
                 </div>
 
-                <div id="tb-ctl-sldr" class="hint--top hint--rounded" data-hint="0">
-                    <input type="range" min="0" max="0">
+                <div class="slider-container">
+                    <input class="slider" type="range" min="0" max="0">
+                </div>
+                
+                <div class="slider-value-container">
+                    <span class="slider-value badge">0</span>
                 </div>
             </div>
 
