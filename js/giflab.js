@@ -72,6 +72,10 @@ function GifLabControls(gifLab) {
         }
     }
     
+    function updateTooltip(frameIndex) {
+        domSliderContainer.attr('data-hint', frameIndex);
+    }
+    
     // hide controls on default
     domControls.hide();
     
@@ -90,7 +94,7 @@ function GifLabControls(gifLab) {
         
         gifPlayer.events.on('update', function(frameIndex, frameIndexPrev) {
             domSlider.val(frameIndex);
-            domSliderContainer.attr('data-hint', frameIndex);
+            updateTooltip(frameIndex);
         });
         
         gifPlayer.events.on('ready', function() {
@@ -108,8 +112,7 @@ function GifLabControls(gifLab) {
             domSlider.prop('max', frameCount - 1);
             domSlider.val(0);
             
-            // update frame counter
-            domSliderContainer.attr('data-hint', 0);
+            updateTooltip(0);
         });
         
         // DOM events
@@ -130,7 +133,7 @@ function GifLabControls(gifLab) {
         domSlider.on('input', function(event) {
             gifPlayer.pause();
             gifPlayer.setFrameIndex(parseInt(event.target.value));
-            domSliderContainer.attr('data-hint', event.target.value);
+            updateTooltip(event.target.value);
         });
     });
 }
