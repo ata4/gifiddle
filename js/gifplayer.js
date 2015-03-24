@@ -1,7 +1,8 @@
 'use strict';
 
 function GifPlayer(canvas) {
-    var data = null;
+    
+    var gif = null;
     var canvas2d = canvas.getContext('2d');
     var frameIndexCurr = 0;
     var frameIndexPrev = 1;
@@ -31,8 +32,8 @@ function GifPlayer(canvas) {
             instance.clear();
             
             // draw background color if enabled
-            if (renderBGColor && data.hdr.gctFlag) {
-                var bgColor = data.hdr.gct[data.hdr.bgColor];
+            if (renderBGColor && gif.hdr.gctFlag) {
+                var bgColor = gif.hdr.gct[gif.hdr.bgColor];
                 canvas2d.fillStyle = 'rgb(' + bgColor.join() + ')';
                 canvas2d.fillRect(0, 0, canvas.width, canvas.height);
             }
@@ -46,16 +47,16 @@ function GifPlayer(canvas) {
     
     var instance = {
         events: new Events(),
-        load: function(_data) {
-            data = _data;
-            canvas.width = data.hdr.width;
-            canvas.height = data.hdr.height;
+        load: function(gifFile) {
+            gif = gifFile;
+            canvas.width = gif.hdr.width;
+            canvas.height = gif.hdr.height;
             
             this.clear();
             this.setFirst();
             
             ready = true;
-            this.events.emit('ready', data);
+            this.events.emit('ready', gif);
         },
         play: function() {
             var frameCount = this.getFrameCount();
@@ -73,7 +74,7 @@ function GifPlayer(canvas) {
             var fixDelay = function(delay) {
                 // override zero delays if enabled
                 if (delay === 0 && !strictDelays) {
-                    if (data.hdr.ver === '89a') {
+                    if (gif.hdr.ver === '89a') {
                         // 10 FPS, default behavior in most browsers
                         delay = 10;
                     } else {
@@ -111,13 +112,13 @@ function GifPlayer(canvas) {
                     loopCount++;
                     
                     // pause if there's no loop count
-                    if (data.loopCount === -1) {
+                    if (gif.loopCount === -1) {
                         this.pause();
                         return false;
                     }
                     
                     // pause if the loop count has been reached
-                    if (data.loopCount > 0 && loopCount >= data.loopCount) {
+                    if (gif.loopCount > 0 && loopCount >= gif.loopCount) {
                         this.pause();
                         return false;
                     }
@@ -241,13 +242,13 @@ function GifPlayer(canvas) {
             return frameIndexCurr;
         },
         getFrameCount: function() {
-            return data.frames.length;
+            return gif.frames.length;
         },
         getFrame: function(frameIndex) {
             if (arguments.length === 1) {
-                return data.frames[frameIndex];
+                return gif.frames[frameIndex];
             } else {
-                return data.frames[frameIndexCurr];
+                return gif.frames[frameIndexCurr];
             }
         },
         setRenderRaw: function(_renderRaw) {

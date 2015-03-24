@@ -10,7 +10,9 @@ $(function() {
     var urlFragIndex = url.indexOf('#');
     if (urlFragIndex !== -1) {
         var gifUrl = url.substring(urlFragIndex + 1);
-        gifLab.loadGifUrl(gifUrl);
+        if (gifUrl.length > 0) {
+            gifLab.loadUrl(gifUrl);
+        }
     }
 });
 
@@ -28,7 +30,7 @@ function GifLab() {
     
     return {
         events: new Events(),
-        loadGifData: function(data) {
+        loadGif: function(gifFile) {
             if (player) {
                 player.stop();
                 player.clear();
@@ -39,21 +41,15 @@ function GifLab() {
 
             player = new GifPlayer(domViewport[0]);
             this.events.emit('initPlayer', player);
-            player.load(data);
+            player.load(gifFile);
         },
-        loadGifFile: function(file) {
-            var loader = new GifLoader();
-            loader.loadFile(file, function (data) {
-                this.loadGifData(data);
+        loadFile: function(file) {
+            var gifFile = new GifFile();
+            gifFile.load(file, function() {
+                this.loadGif(gifFile);
             }.bind(this));
         },
-        loadGifBuffer: function(buffer) {
-            var loader = new GifLoader();
-            loader.loadBuffer(buffer, function (data) {
-                this.loadGifData(data);
-            }.bind(this));            
-        },
-        loadGifUrl: function(url) {
+        loadUrl: function(url) {
             // many sites don't provide a wildcard ACAO header, so use a CORS proxy
             //url = 'https://cors-anywhere.herokuapp.com/' + url;
 
@@ -63,7 +59,7 @@ function GifLab() {
 
             xhr.onload = function (evt) {
                 if (xhr.status === 200) {
-                    this.loadGifBuffer(xhr.response);
+                    this.loadFile(xhr.response);
                 } else {
                     // handle error
                 }
@@ -74,7 +70,7 @@ function GifLab() {
             };
 
             xhr.open('GET', url, true);
-            xhr.responseType = 'arraybuffer';
+            xhr.responseType = 'blob';
             xhr.send();
         }
     };
@@ -93,7 +89,7 @@ function GifLabMenu(gifLab) {
             return;
         }
         
-        gifLab.loadGifFile(file);
+        gifLab.loadFile(file);
     });
 
     domFileLink.on('click', function(event) {
@@ -105,7 +101,7 @@ function GifLabMenu(gifLab) {
     var domInputUrl = domModal.find('#input-url');
     
     domButtonUrl.on('click', function() {
-        gifLab.loadGifUrl(domInputUrl.val());
+        gifLab.loadUrl(domInputUrl.val());
     });
 
     gifLab.events.on('initPlayer', function(gifPlayer) {
