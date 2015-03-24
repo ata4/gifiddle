@@ -54,25 +54,28 @@ function GifLab() {
             }.bind(this));            
         },
         loadGifUrl: function(url) {
-            var domImg = $('<img>');
-            domImg.attr('src', url);
-            domImg.on('load', function() {
-                // Note: jQuery's .ajax() doesn't really support binary files, so
-                // use a XHR level 2 object directly instead
-                try {
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('GET', url, true);
-                    xhr.responseType = 'arraybuffer';
-                    
-                    xhr.addEventListener("load", function (evt) {
-                        this.loadGifBuffer(xhr.response);
-                    }.bind(this), false);
+            // many sites don't provide a wildcard ACAO header, so use a CORS proxy
+            //url = 'https://cors-anywhere.herokuapp.com/' + url;
 
-                    xhr.send();
-                } catch (err) {
-                    console.error(err);
+            // Note: jQuery's .ajax() doesn't support binary files well, therefore
+            // a direct XHR level 2 object is used instead
+            var xhr = new XMLHttpRequest();
+
+            xhr.onload = function (evt) {
+                if (xhr.status === 200) {
+                    this.loadGifBuffer(xhr.response);
+                } else {
+                    // handle error
                 }
-            }.bind(this));
+            }.bind(this);
+
+            xhr.onerror = function(evt) {
+                console.error(evt);
+            };
+
+            xhr.open('GET', url, true);
+            xhr.responseType = 'arraybuffer';
+            xhr.send();
         }
     };
 }
@@ -89,8 +92,8 @@ function GifLabMenu(gifLab) {
         if (!file) {
             return;
         }
-
-        gifLab.loadGif(file);
+        
+        gifLab.loadGifFile(file);
     });
 
     domFileLink.on('click', function(event) {
