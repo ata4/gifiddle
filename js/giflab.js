@@ -17,6 +17,12 @@ $(function() {
 });
 
 function GifLab() {
+    
+    // set of hosts that have a wildcard ACAO header
+    var corsHosts = {
+        'imgur.com': true,
+        'tumblr.com': true
+    };
 
     var domViewport = $('#viewport');
     domViewport.hide();
@@ -66,8 +72,19 @@ function GifLab() {
         loadUrl: function(url) {
             preLoad();
             
+            // get hostname
+            var parser = document.createElement('a');
+            parser.href = url;
+            
+            var hostname = parser.hostname;
+            
+            // strip subdomain
+            hostname = hostname.split('.').slice(-2).join('.');
+            
             // many sites don't provide a wildcard ACAO header, so use a CORS proxy
-            //url = 'https://cors-anywhere.herokuapp.com/' + url;
+            if (!corsHosts[hostname]) {
+                url = 'https://cors-anywhere.herokuapp.com/' + url;
+            }
 
             // Note: jQuery's .ajax() doesn't support binary files well, therefore
             // a direct XHR level 2 object is used instead
