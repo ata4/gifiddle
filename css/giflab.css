@@ -13,6 +13,10 @@
     padding: 0 1em;
 }
 
+.modal {
+    top: 25%;
+}
+
 #viewport {
     position: absolute;
     margin: auto;
@@ -22,6 +26,7 @@
     bottom: 0;
     left: 0;
     background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEX////MzMw46qqDAAAAEElEQVQI12Ng+M+AFeEQBgB+vw/xWs16mgAAAABJRU5ErkJggg==');
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.5);
 }
 
 #toolbar-controls .slider {

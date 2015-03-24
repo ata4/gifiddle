@@ -45,7 +45,7 @@
                                     <a role="menuitem" tabindex="-1" href="#" class="file-link">Local file</a>
                                 </li>
                                 <li role="presentation">
-                                    <a role="menuitem" tabindex="-1" href="#">Remote URL</a>
+                                    <a role="menuitem" tabindex="-1" data-toggle="modal" data-target="#modal-url">Remote file</a>
                                 </li>
                             </ul>
                         </li>
@@ -57,12 +57,16 @@
                                     <input type="checkbox" id="checkbox-render-raw">Render raw frames
                                   </label>
                                 </div>
+                                <div class="checkbox">
+                                  <label>
+                                    <input type="checkbox" id="checkbox-show-info">Show information
+                                  </label>
+                                </div>
                             </div>
                         </li>
                     </ul>
                 </div>
             </div>
-            
             
             <div id="toolbar-controls" class="flex-container">
                 <div class="buttons btn-group" role="group">
@@ -89,5 +93,23 @@
                 
             </div>
         </nav>
+        
+        <div class="modal fade" id="modal-url" tabindex="-1" role="dialog" aria-labelledby="modal-url-label" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="modal-url-label">Open remote GIF file</h4>
+              </div>
+              <div class="modal-body">
+                  <input class="form-control" id="input-url" placeholder="URL" type="url">
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Load</button>
+              </div>
+            </div>
+          </div>
+        </div>
     </body>
 </html>
