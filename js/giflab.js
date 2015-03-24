@@ -20,11 +20,24 @@ function GifLab() {
 
     var domViewport = $('#viewport');
     domViewport.hide();
+    
+    var domLoader = $('#loader');
+    domLoader.hide();
 
     //Handles menu drop down
     $('.form-menu').click(function (e) {
         e.stopPropagation();
     });
+    
+    function preLoad() {
+        domLoader.show();
+        domViewport.hide();
+    }
+    
+    function postLoad() {
+        domLoader.hide();
+        domViewport.show();
+    }
     
     var player = null;
     
@@ -37,19 +50,22 @@ function GifLab() {
                 player = null;
             }
 
-            domViewport.show();
-
             player = new GifPlayer(domViewport[0]);
             this.events.emit('initPlayer', player);
+            player.events.on('ready', postLoad);
             player.load(gifFile);
         },
         loadFile: function(file) {
+            preLoad();
+            
             var gifFile = new GifFile();
             gifFile.load(file, function() {
                 this.loadGif(gifFile);
             }.bind(this));
         },
         loadUrl: function(url) {
+            preLoad();
+            
             // many sites don't provide a wildcard ACAO header, so use a CORS proxy
             //url = 'https://cors-anywhere.herokuapp.com/' + url;
 

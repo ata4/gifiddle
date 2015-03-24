@@ -17,7 +17,7 @@
     top: 25%;
 }
 
-#viewport {
+.center {
     position: absolute;
     margin: auto;
     padding: 0;
@@ -25,8 +25,20 @@
     right: 0;
     bottom: 0;
     left: 0;
+}
+
+#loader {
+    width: 1em;
+    height: 1em;
+    font-size: 500%;
+    cursor: default;
+    z-index: 1000;
+}
+
+#viewport {
     background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEX////MzMw46qqDAAAAEElEQVQI12Ng+M+AFeEQBgB+vw/xWs16mgAAAABJRU5ErkJggg==');
     box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.5);
+    z-index: 999;
 }
 
 #toolbar-controls .slider {
