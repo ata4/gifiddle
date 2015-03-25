@@ -28,7 +28,7 @@
     </head>
     <body>
         <div id="loader" class="center">
-            <i class="fa fa-cog fa-spin"></i>
+            <i class="fa fa-spinner fa-pulse"></i>
         </div>
         
         <canvas id="viewport" class="center" width="0" height="0"></canvas>
@@ -40,7 +40,7 @@
                     <ul class="nav navbar-nav">
                         <li class="dropdown">
                             <a id="drop1" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
-                                Open <span class="caret"></span>
+                                <i class="fa fa-file-image-o"></i> Open <span class="caret"></span>
                             </a>
                             <ul class="dropdown-menu" role="menu">
                                 <li role="presentation">
@@ -52,7 +52,9 @@
                             </ul>
                         </li>
                         <li class="dropdown">
-                            <a class="dropdown-toggle" href="#" data-toggle="dropdown">Options <strong class="caret"></strong></a>
+                            <a class="dropdown-toggle" href="#" data-toggle="dropdown">
+                                <i class="fa fa-cogs"></i> Options <strong class="caret"></strong>
+                            </a>
                             <div class="dropdown-menu form-menu">
                                 <div class="checkbox">
                                   <label>
@@ -65,6 +67,11 @@
                                   </label>
                                 </div>
                             </div>
+                        </li>
+                        <li class="comment-link">
+                            <a href="#" data-toggle="modal" data-target="#modal-comment">
+                                <i class="fa fa-comments"></i> Comments <span class="badge">2</span>
+                            </a>
                         </li>
                     </ul>
                 </div>
@@ -111,6 +118,29 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                         <button type="button" class="btn btn-primary" data-dismiss="modal" id="button-url">Load</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal fade" id="modal-comment" tabindex="-1" role="dialog" aria-labelledby="modal-comment-label" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="modal-comment-label">GIF file comments</h4>
+                    </div>
+                    <div class="modal-body">
+                        <pre class="comment-box">
+                        </pre>
+                        <div class="flex-container">
+                            <div><a class="pager-previous" href="#"><i class="fa fa-arrow-left"></i> Previous</a></div>
+                            <div class="flex"></div> 
+                            <div><a class="pager-next" href="#">Next <i class="fa fa-arrow-right"></i></a></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>

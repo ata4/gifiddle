@@ -129,13 +129,60 @@ function GifLabMenu(gifLab) {
         domFileInput.trigger('click');
     });
     
-    var domModal = $('#modal-url');
-    var domButtonUrl = domModal.find('#button-url');
-    var domInputUrl = domModal.find('#input-url');
+    var domModalUrl = $('#modal-url');
+    var domButtonUrl = domModalUrl.find('#button-url');
+    var domInputUrl = domModalUrl.find('#input-url');
     
     domButtonUrl.on('click', function() {
         gifLab.loadUrl(domInputUrl.val());
     });
+    
+    var domModalComment = $('#modal-comment');
+    var domCommentBox = domModalComment.find('.comment-box');
+    var domCommentButtonPrevious = domModalComment.find('.pager-previous');
+    var domCommentButtonNext = domModalComment.find('.pager-next');
+    var domCommentLink = domToolbarMenu.find('.comment-link');
+    var domCommentBadge = domCommentLink.find('.badge');
+    
+    var commentArray = [];
+    var commentIndex = 0;
+    
+    domCommentLink.hide();
+
+    domCommentButtonPrevious.on('click', function() {
+        commentIndex--;
+        updateCommentButtons();
+    });
+    
+    domCommentButtonNext.on('click', function() {
+        commentIndex++;
+        updateCommentButtons();
+    });
+    
+    function updateCommentButtons() {
+        if (commentArray.length <= 1) {
+            commentIndex = 0;
+            domCommentButtonPrevious.hide();
+            domCommentButtonNext.hide();
+        } else if (commentIndex >= commentArray.length - 1) {
+            commentIndex = commentArray.length - 1;
+            domCommentButtonPrevious.show();
+            domCommentButtonNext.hide();
+        } else if (commentIndex <= 0) {
+            commentIndex = 0;
+            domCommentButtonPrevious.hide();
+            domCommentButtonNext.show();
+        } else {
+            domCommentButtonPrevious.show();
+            domCommentButtonNext.show();
+        }
+        
+        if (commentArray.length > 0) {
+            domCommentBox.text(commentArray[commentIndex]);
+        } else {
+            domCommentBox.text('');
+        }
+    }
 
     gifLab.events.on('initPlayer', function(gifPlayer) {
         domCheckboxRenderRaw.off();
@@ -145,8 +192,21 @@ function GifLabMenu(gifLab) {
             }
         });
 
-        gifPlayer.events.on('ready', function() {
+        gifPlayer.events.on('ready', function(gif) {
             gifPlayer.setRenderRaw(domCheckboxRenderRaw.prop('checked'));
+            
+            commentArray = gif.comments;
+            commentIndex = 0;
+            
+            if (commentArray.length === 0) {
+                domCommentLink.fadeOut();
+            } else {
+                domCommentLink.fadeIn();
+            }
+            
+            domCommentBadge.text(commentArray.length);
+            
+            updateCommentButtons();
         });
     });
 }

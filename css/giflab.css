@@ -13,8 +13,8 @@
     padding: 0 1em;
 }
 
-.modal {
-    top: 25%;
+.modal pre {
+    max-height: 20em;
 }
 
 .center {
