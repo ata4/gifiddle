@@ -18,37 +18,51 @@ $(function() {
 
 function GifLab() {
     
+    function GifLabLoader() {
+
+        var domViewport = $('#viewport');
+        var domLoaderIcon = $('#loader-icon');
+        var domLoaderAlert = $('#loader-alert');
+        var domLoaderAlertMessage = domLoaderAlert.find('.alert-message');
+        
+        domViewport.hide();
+        domLoaderIcon.hide();
+        domLoaderAlert.hide();
+
+        return {
+            showLoad: function() {
+                domLoaderIcon.show();
+                domViewport.hide();
+                domLoaderAlert.hide();
+            },
+            showError: function(message) {
+                domLoaderIcon.hide();
+                domViewport.hide();
+                domLoaderAlertMessage.text(message);
+                domLoaderAlert.fadeIn();
+            },
+            showCanvas: function() {
+                domLoaderIcon.hide();
+                domViewport.show();
+                domLoaderAlert.slideUp();
+            }
+        };
+    }
+    
     // set of hosts that have a wildcard ACAO header
     var corsHosts = {
         'imgur.com': true,
-        'tumblr.com': true
+        'tumblr.com': true,
+        'localhost': true
     };
 
     var domViewport = $('#viewport');
-    domViewport.hide();
-    
-    var domLoader = $('#loader');
-    domLoader.hide();
-
-    //Handles menu drop down
-    $('.form-menu').click(function (e) {
-        e.stopPropagation();
-    });
-    
-    function preLoad() {
-        domLoader.show();
-        domViewport.hide();
-    }
-    
-    function postLoad() {
-        domLoader.hide();
-        domViewport.show();
-    }
     
     var player = null;
     
     return {
         events: new Events(),
+        loader: new GifLabLoader(),
         loadGif: function(gifFile) {
             if (player) {
                 player.stop();
@@ -58,20 +72,32 @@ function GifLab() {
 
             player = new GifPlayer(domViewport[0]);
             this.events.emit('initPlayer', player);
-            player.events.on('ready', postLoad);
+            player.events.on('ready', function() {
+                this.loader.showCanvas();
+            }.bind(this));
+
             player.load(gifFile);
         },
-        loadFile: function(file) {
-            preLoad();
-            
-            var gifFile = new GifFile();
-            gifFile.load(file, function() {
-                this.loadGif(gifFile);
+        loadBuffer: function(buffer) {
+            try {
+                var gifFile = new GifFile();
+                gifFile.load(buffer, function () {
+                    this.loadGif(gifFile);
+                }.bind(this));
+            } catch (ex) {
+                this.loader.showError('GIF error: ' + ex.message);
+            }
+        },
+        loadBlob: function(blob) {
+            this.loader.showLoad();
+
+            var reader = new FileReader();
+            reader.addEventListener('load', function(event) {
+                this.loadBuffer(event.target.result);
             }.bind(this));
+            reader.readAsArrayBuffer(blob);
         },
         loadUrl: function(url) {
-            preLoad();
-            
             // get hostname
             var parser = document.createElement('a');
             parser.href = url;
@@ -89,21 +115,30 @@ function GifLab() {
             // Note: jQuery's .ajax() doesn't support binary files well, therefore
             // a direct XHR level 2 object is used instead
             var xhr = new XMLHttpRequest();
-
-            xhr.onload = function (evt) {
-                if (xhr.status === 200) {
-                    this.loadFile(xhr.response);
-                } else {
-                    // handle error
-                }
+            
+            xhr.onloadstart = function() {
+                this.loader.showLoad();
             }.bind(this);
 
-            xhr.onerror = function(evt) {
-                console.error(evt);
-            };
+            xhr.onload = function () {
+                // only allow 'OK'
+                if (xhr.status === 200) {
+                    this.loadBuffer(xhr.response);
+                } else {
+                    this.loader.showError('Unable to download GIF: ' + new HttpStatus(xhr.status));
+                }
+            }.bind(this);
+            
+            xhr.ontimeout = function() {
+                this.loader.showError('Unable to download GIF: Connection timed out');
+            }.bind(this);
 
+            xhr.onerror = function() {
+                this.loader.showError('Unable to download GIF.');
+            }.bind(this);
+            
             xhr.open('GET', url, true);
-            xhr.responseType = 'blob';
+            xhr.responseType = 'arraybuffer';
             xhr.send();
         }
     };
@@ -127,7 +162,7 @@ function GifLabMenu(gifLab) {
                 return;
             }
 
-            gifLab.loadFile(file);
+            gifLab.loadBlob(file);
         });
 
         domFileLink.on('click', function(event) {
@@ -149,6 +184,12 @@ function GifLabMenu(gifLab) {
     // options
     (function() {
         var domCheckboxRenderRaw = domToolbarMenu.find('#checkbox-render-raw');
+        var domFormMenu = domToolbarMenu.find('.form-menu');
+        
+        // prevent options drop down form from disappearing on click
+        domFormMenu.click(function(e) {
+            e.stopPropagation();
+        });
 
         gifLab.events.on('initPlayer', function(gifPlayer) {
             domCheckboxRenderRaw.off();
@@ -327,3 +368,54 @@ function GifLabControls(gifLab) {
         });
     });
 }
+
+function HttpStatus(code) {
+    this.code = code;
+}
+
+HttpStatus.prototype.statusCodes = {
+    '200': 'OK',
+    '201': 'Created',
+    '202': 'Accepted',
+    '203': 'Non-Authoritative Information',
+    '204': 'No Content',
+    '205': 'Reset Content',
+    '206': 'Partial Content',
+    '300': 'Multiple Choices',
+    '301': 'Moved Permanently',
+    '302': 'Found',
+    '303': 'See Other',
+    '304': 'Not Modified',
+    '305': 'Use Proxy',
+    '306': 'Unused',
+    '307': 'Temporary Redirect',
+    '400': 'Bad Request',
+    '401': 'Unauthorized',
+    '402': 'Payment Required',
+    '403': 'Forbidden',
+    '404': 'Not Found',
+    '405': 'Method Not Allowed',
+    '406': 'Not Acceptable',
+    '407': 'Proxy Authentication Required',
+    '408': 'Request Timeout',
+    '409': 'Conflict',
+    '410': 'Gone',
+    '411': 'Length Required',
+    '412': 'Precondition Required',
+    '413': 'Request Entry Too Large',
+    '414': 'Request-URI Too Long',
+    '415': 'Unsupported Media Type',
+    '416': 'Requested Range Not Satisfiable',
+    '417': 'Expectation Failed',
+    '418': 'I\'m a teapot',
+    '500': 'Internal Server Error',
+    '501': 'Not Implemented',
+    '502': 'Bad Gateway',
+    '503': 'Service Unavailable',
+    '504': 'Gateway Timeout',
+    '505': 'HTTP Version Not Supported'
+};
+
+HttpStatus.prototype.toString = function() {
+    return this.code + ' ' + this.statusCodes[this.code];
+};

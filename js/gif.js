@@ -7,7 +7,7 @@ function GifFile() {
     this.frames = [];
 };
 
-GifFile.prototype.load = function(blob, callback) {
+GifFile.prototype.load = function(buffer, callback) {
     
     var gce;
     var that = this;
@@ -44,14 +44,8 @@ GifFile.prototype.load = function(blob, callback) {
     parser.handleEOF = function(block) {
         callback && callback();
     };
-
-    var reader = new FileReader();
     
-    reader.addEventListener('load', function(event) {
-        parser.parse(event.target.result);
-    });
-
-    reader.readAsArrayBuffer(blob);
+    parser.parse(buffer);
 };
 
 function GifFrame(hdr, img, pte, gce) {

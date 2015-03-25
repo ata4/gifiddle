@@ -31,12 +31,16 @@
     left: 0;
 }
 
-#loader {
+#loader-icon {
     width: 1em;
     height: 1em;
     font-size: 500%;
     cursor: default;
     z-index: 1000;
+}
+
+#loader-alert {
+    margin: 1em;
 }
 
 #viewport {
