@@ -12,6 +12,14 @@
     float: left;
     width: 8px;
     height: 8px;
+    border-left: 1px solid black;
+    border-top: 1px solid black;
+}
+
+.color-table {
+    width: 129px;
+    border-bottom: 1px solid black;
+    border-right: 1px solid black;
 }
 
 .dropdown-options {

@@ -466,26 +466,16 @@ function GifLabInfo(gifLab) {
             return 'n/a';
         }
         
-        // color table sizes are always base 2, so their square root should always
-        // be a real number
-        var colorTableSize = Math.sqrt(ct.length);
-        var cellSize = 8;
-        
         var domContainer = $('<div>');
-        
         var domColorTable = $('<div>');
         domColorTable.addClass('color-table');
-        domColorTable.css('width', colorTableSize * cellSize + 'px');
-        domColorTable.css('height', colorTableSize * cellSize + 'px');
 
-        for (var y = 0; y < colorTableSize; y++) {
-            for (var x = 0; x < colorTableSize; x++) {
-                var color = ct[y * colorTableSize + x];
-                var domColor = $('<div>');
-                domColor.css('background-color', 'rgb(' + color.join() + ')');
-                domColor.attr('title', color.join());
-                domColorTable.append(domColor);
-            }
+        for (var i = 0; i < ct.length; i++) {
+            var color = ct[i];
+            var domColor = $('<div>');
+            domColor.css('background-color', 'rgb(' + color.join() + ')');
+            domColor.attr('title', i + ': ' + color.join());
+            domColorTable.append(domColor);
         }
         
         domContainer.append(ct.length);
