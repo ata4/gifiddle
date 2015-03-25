@@ -21,9 +21,7 @@ GifFile.prototype.load = function(buffer, callback) {
     };
     parser.handleComExt = function(block) {
         // convert line breaks
-        var comment = block.comment;
-        comment = comment.replace("\r\n", "\n");
-        comment = comment.replace("\r", "\n");
+        var comment = block.comment.replace(/\r\n?/g, '\n');
         that.comments.push(comment);
     };
     parser.handlePTExt = function(block) {
