@@ -31,6 +31,20 @@
     left: 0;
 }
 
+#info-sidebar {
+    width: 24em;
+    position: fixed;
+    top: 1em;
+    right: 1em;
+    bottom: 2em;
+    overflow: auto;
+    z-index: 1000;
+}
+
+#info-sidebar table > tbody > tr:first-child > td:first-child {
+    width: 14em;
+}
+
 #loader-icon {
     width: 1em;
     height: 1em;

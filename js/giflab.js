@@ -3,6 +3,7 @@ $(function() {
     
     // init modules
     new GifLabMenu(gifLab);
+    new GifLabInfo(gifLab);
     new GifLabControls(gifLab);
     
     // auto-load image in parameters
@@ -196,7 +197,7 @@ function GifLabMenu(gifLab) {
                     gifPlayer.setRenderRaw(event.target.checked);
                 }
             });
-
+            
             gifPlayer.events.on('ready', function() {
                 gifPlayer.setRenderRaw(domCheckboxRenderRaw.prop('checked'));
             });
@@ -364,6 +365,235 @@ function GifLabControls(gifLab) {
             updateTooltip(event.target.value);
         });
     });
+}
+
+function GifLabInfo(gifLab) {
+    
+    var domSidebar = $('#info-sidebar');
+    var domHdrPanel = domSidebar.find('#info-panel-hdr');
+    var domGcePanel = domSidebar.find('#info-panel-gce');
+    var domImgPanel = domSidebar.find('#info-panel-img');
+    var domPtePanel = domSidebar.find('#info-panel-pte');
+    
+    var hdrTable = new Table(domHdrPanel.find('table'));
+    var gceTable = new Table(domGcePanel.find('table'));
+    var imgTable = new Table(domImgPanel.find('table'));
+    var pteTable = new Table(domPtePanel.find('table'));
+    
+    domHdrPanel.hide();
+    domGcePanel.hide();
+    domImgPanel.hide();
+    domPtePanel.hide();
+    
+    var domCheckboxShowInfoRaw = $('#checkbox-show-info');
+    
+    domCheckboxShowInfoRaw.on('change', function(event) {
+        if (event.target.checked) {
+            domSidebar.fadeIn();
+            if (framePrev !== null) {
+                updateFrame(framePrev);
+            }
+        } else {
+            domSidebar.fadeOut();
+        }
+    });
+    
+    if (domCheckboxShowInfoRaw.prop('checked')) {
+        domSidebar.show();
+    } else {
+        domSidebar.hide();
+    }
+    
+    var formatter = {
+        byteSize: function(bytes, si) {
+            var thresh = si ? 1000 : 1024;
+            if(bytes < thresh) return bytes + ' B';
+            var units = si ? ['kB','MB','GB','TB','PB','EB','ZB','YB'] : ['KiB','MiB','GiB','TiB','PiB','EiB','ZiB','YiB'];
+            var u = -1;
+            do {
+                bytes /= thresh;
+                ++u;
+            } while(bytes >= thresh);
+            return bytes.toFixed(1) + ' ' + units[u];
+        },
+        delayTime: function(delay) {
+            var str = delay + ' (';
+            delay *= 10;
+            if (delay >= 1000) {
+                str += (delay / 1000).toFixed(2) + ' s';
+            } else {
+                str += delay + ' ms';
+            }
+            str += ')';
+            return str;
+        },
+        disposalMethod: function(disposal) {
+            var str = disposal + ' (';
+            var names = ['unspecified', 'none', 'background', 'previous'];
+            if (names[disposal]) {
+                str += names[disposal];
+            } else {
+                str += 'undefined';
+            }
+            str += ')';
+            return str;
+        },
+        boolean: function(v) {
+            return v ? 'yes' : 'no';
+        },
+        aspectRatio: function(aspectRatio) {
+            var str = aspectRatio;
+            if (aspectRatio !== 0) {
+                str += ' (';
+                str += ((aspectRatio + 15) / 64).toFixed(2);
+                str += ')';
+            }
+            return str;
+        },
+        colorRes: function(colorRes) {
+            var str = colorRes;
+            if (colorRes > 0) {
+                str += ' (';
+                str += colorRes - 1;
+                str += ' bpp)';
+            }
+            return str;
+        }  
+    };
+    
+    function updateHeader(gifFile) {
+        var hdr = gifFile.hdr;
+        
+        domHdrPanel.show();
+        
+        hdrTable.row('Version', hdr.ver);
+        hdrTable.row('Screen size', hdr.width + 'x' + hdr.height);
+        hdrTable.row('Global color table', formatter.boolean(hdr.gctFlag));
+        hdrTable.row('Global color table entries', hdr.gctFlag ? hdr.gct.length : 'n/a');
+        hdrTable.row('Global color table sorted', hdr.gctFlag ? formatter.boolean(hdr.gctSortFlag) : 'n/a');
+        hdrTable.row('Color resolution', formatter.colorRes(hdr.colorRes));
+        hdrTable.row('Background color', hdr.bgColor);
+        hdrTable.row('Pixel aspect ratio', formatter.aspectRatio(hdr.pixelAspectRatio));
+
+        if (gifFile.loopCount !== -1) {
+            hdrTable.row('Loop count', gifFile.loopCount);
+        }
+    }
+    
+    var framePrev;
+    
+    function updateFrame(gifPlayer) {
+        var frame = gifPlayer.getFrame();
+        framePrev = frame;
+        
+        // don't produce overhead when the sidebar is hidden
+        if (!domSidebar.is(':visible')) {
+            return;
+        }
+        
+        var frameIndex = gifPlayer.getFrameIndex();
+
+        imgTable.empty();
+        
+        var img = frame.img;
+        if (img) {
+            domImgPanel.show();
+            
+            imgTable.row('Index', frameIndex);
+            imgTable.row('Size', img.width + 'x' + img.height);
+            imgTable.row('Position', img.topPos + 'x' + img.leftPos);
+            imgTable.row('Interlaced', formatter.boolean(img.interlaced));
+            imgTable.row('Local color table', formatter.boolean(img.lctFlag));
+            imgTable.row('Local color table entries', img.lctFlag ? img.lct.length : 'n/a');
+            imgTable.row('Local color table sorted', img.lctFlag ? formatter.boolean(img.lctSortFlag) : 'n/a');
+            imgTable.row('Compressed size', formatter.byteSize(img.lzwSize));
+            imgTable.row('Uncompressed size', formatter.byteSize(img.pixelsSize));
+            imgTable.row('Compression ratio', (img.pixelsSize / img.lzwSize).toFixed(2));
+            imgTable.row('LZW min. code size', img.lzwMinCodeSize);
+        } else {
+            domImgPanel.hide();
+        }
+        
+        pteTable.empty();
+
+        var pte = frame.pte;
+        if (pte) {
+            domPtePanel.show();
+            
+            pteTable.row('Index', frameIndex);
+            pteTable.row('Size', pte.width + 'x' + pte.height);
+            pteTable.row('Position', pte.topPos + 'x' + pte.leftPos);
+            pteTable.row('Character cell size', pte.charCellWidth + 'x' + pte.charCellHeight);
+            pteTable.row('Foreground color', pte.fgColor);
+            pteTable.row('Background color', pte.bgColor);
+        } else {
+            domPtePanel.hide();
+        }
+        
+        gceTable.empty();
+
+        var gce = frame.gce;
+        if (gce) {
+            domGcePanel.show();
+
+            gceTable.row('Delay', formatter.delayTime(gce.delayTime));
+            gceTable.row('Disposal method', formatter.disposalMethod(gce.disposalMethod));
+            gceTable.row('Transparent', formatter.boolean(gce.transparencyFlag));
+            gceTable.row('Wait for user input', formatter.boolean(gce.userInput));
+        } else {
+            domGcePanel.hide();
+        }
+    }
+    
+    gifLab.events.on('initPlayer', function(gifPlayer) {
+        
+        framePrev = null;
+        
+        gifPlayer.events.on('ready', function(gifFile) {
+            updateHeader(gifFile);
+        });
+        
+        gifPlayer.events.on('update', function() {
+            updateFrame(gifPlayer);
+        });
+    });
+}
+
+function Table(domTable) {
+    
+    var domTbody = domTable.find('tbody');
+    
+    if (domTbody.length === 0) {
+        domTbody = $('<tbody>');
+        domTable.append(domTbody);
+    }
+    
+    var domTr;
+    
+    return {
+        row: function() {
+            domTr = $('<tr>');
+            domTbody.append(domTr);
+            
+            for (var i = 0; i < arguments.length; i++) {
+                this.col(arguments[i]);
+            }
+            
+            return domTr;
+        },
+        col: function(content) {
+            if (!domTr) {
+                this.row();
+            }
+            var domTd = $('<td>');
+            domTd.text(content);
+            domTr.append(domTd);
+            return domTd;
+        },
+        empty: function() {
+            domTbody.empty();
+        }
+    };
 }
 
 function HttpStatus(code) {
