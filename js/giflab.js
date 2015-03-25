@@ -111,106 +111,125 @@ function GifLab() {
 
 function GifLabMenu(gifLab) {
 
+    // global elements
     var domToolbar = $('#toolbar');
     var domToolbarMenu = domToolbar.find('#toolbar-menu');
     var domToolbarExtras = domToolbar.find('#toolbar-extras');
-    var domFileLink = domToolbarMenu.find('.file-link');
-    var domCheckboxRenderRaw = domToolbarMenu.find('#checkbox-render-raw');
-    var domFileInput = $('<input type="file">');
-
-    domFileInput.on('change', function(event) {
-        var file = event.target.files[0];
-        if (!file) {
-            return;
-        }
+    
+    // open file link
+    (function() {
+        var domFileLink = domToolbarMenu.find('.file-link');
+        var domFileInput = $('<input type="file">');
         
-        gifLab.loadFile(file);
-    });
-
-    domFileLink.on('click', function(event) {
-        domFileInput.trigger('click');
-    });
-    
-    var domModalUrl = $('#modal-url');
-    var domButtonUrl = domModalUrl.find('#button-url');
-    var domInputUrl = domModalUrl.find('#input-url');
-    
-    domButtonUrl.on('click', function() {
-        gifLab.loadUrl(domInputUrl.val());
-    });
-    
-    var domModalComment = $('#modal-comment');
-    var domCommentBox = domModalComment.find('.comment-box');
-    var domCommentButtonPrevious = domModalComment.find('.pager-previous');
-    var domCommentButtonNext = domModalComment.find('.pager-next');
-    var domCommentLink = domToolbarExtras.find('.comment-link');
-    var domCommentBadge = domCommentLink.find('.badge');
-    
-    var commentArray = [];
-    var commentIndex = 0;
-    
-    domCommentLink.hide();
-
-    domCommentButtonPrevious.on('click', function() {
-        commentIndex--;
-        updateCommentButtons();
-    });
-    
-    domCommentButtonNext.on('click', function() {
-        commentIndex++;
-        updateCommentButtons();
-    });
-    
-    function updateCommentButtons() {
-        if (commentArray.length <= 1) {
-            commentIndex = 0;
-            domCommentButtonPrevious.hide();
-            domCommentButtonNext.hide();
-        } else if (commentIndex >= commentArray.length - 1) {
-            commentIndex = commentArray.length - 1;
-            domCommentButtonPrevious.show();
-            domCommentButtonNext.hide();
-        } else if (commentIndex <= 0) {
-            commentIndex = 0;
-            domCommentButtonPrevious.hide();
-            domCommentButtonNext.show();
-        } else {
-            domCommentButtonPrevious.show();
-            domCommentButtonNext.show();
-        }
-        
-        if (commentArray.length > 0) {
-            domCommentBox.text(commentArray[commentIndex]);
-        } else {
-            domCommentBox.text('');
-        }
-    }
-
-    gifLab.events.on('initPlayer', function(gifPlayer) {
-        domCheckboxRenderRaw.off();
-        domCheckboxRenderRaw.on('change', function(event) {
-            if (gifPlayer.isReady()) {
-                gifPlayer.setRenderRaw(event.target.checked);
+        domFileInput.on('change', function(event) {
+            var file = event.target.files[0];
+            if (!file) {
+                return;
             }
+
+            gifLab.loadFile(file);
         });
 
-        gifPlayer.events.on('ready', function(gif) {
-            gifPlayer.setRenderRaw(domCheckboxRenderRaw.prop('checked'));
-            
-            commentArray = gif.comments;
-            commentIndex = 0;
-            
-            if (commentArray.length === 0) {
-                domCommentLink.fadeOut();
+        domFileLink.on('click', function(event) {
+            domFileInput.trigger('click');
+        });
+    })();
+    
+    // open url link and modal
+    (function() {
+        var domModalUrl = $('#modal-url');
+        var domButtonUrl = domModalUrl.find('#button-url');
+        var domInputUrl = domModalUrl.find('#input-url');
+        
+        domButtonUrl.on('click', function() {
+            gifLab.loadUrl(domInputUrl.val());
+        });
+    })();
+    
+    // options
+    (function() {
+        var domCheckboxRenderRaw = domToolbarMenu.find('#checkbox-render-raw');
+
+        gifLab.events.on('initPlayer', function(gifPlayer) {
+            domCheckboxRenderRaw.off();
+            domCheckboxRenderRaw.on('change', function(event) {
+                if (gifPlayer.isReady()) {
+                    gifPlayer.setRenderRaw(event.target.checked);
+                }
+            });
+
+            gifPlayer.events.on('ready', function() {
+                gifPlayer.setRenderRaw(domCheckboxRenderRaw.prop('checked'));
+            });
+        });
+    })();
+    
+    // comments modal
+    (function() {
+        var domModalComment = $('#modal-comment');
+        var domCommentBox = domModalComment.find('.comment-box');
+        var domCommentButtonPrevious = domModalComment.find('.pager-previous');
+        var domCommentButtonNext = domModalComment.find('.pager-next');
+        var domCommentLink = domToolbarExtras.find('.comment-link');
+        var domCommentBadge = domCommentLink.find('.badge');
+
+        var commentArray = [];
+        var commentIndex = 0;
+
+        domCommentLink.hide();
+
+        domCommentButtonPrevious.on('click', function() {
+            commentIndex--;
+            update();
+        });
+
+        domCommentButtonNext.on('click', function() {
+            commentIndex++;
+            update();
+        });
+        
+        function update() {
+            if (commentArray.length <= 1) {
+                commentIndex = 0;
+                domCommentButtonPrevious.hide();
+                domCommentButtonNext.hide();
+            } else if (commentIndex >= commentArray.length - 1) {
+                commentIndex = commentArray.length - 1;
+                domCommentButtonPrevious.show();
+                domCommentButtonNext.hide();
+            } else if (commentIndex <= 0) {
+                commentIndex = 0;
+                domCommentButtonPrevious.hide();
+                domCommentButtonNext.show();
             } else {
-                domCommentLink.fadeIn();
+                domCommentButtonPrevious.show();
+                domCommentButtonNext.show();
             }
-            
-            domCommentBadge.text(commentArray.length);
-            
-            updateCommentButtons();
+
+            if (commentArray.length > 0) {
+                domCommentBox.text(commentArray[commentIndex]);
+            } else {
+                domCommentBox.text('');
+            }
+        }
+        
+        gifLab.events.on('initPlayer', function(gifPlayer) {
+            gifPlayer.events.on('ready', function(gifFile) {
+                commentArray = gifFile.comments;
+                commentIndex = 0;
+
+                if (commentArray.length === 0) {
+                    domCommentLink.fadeOut();
+                } else {
+                    domCommentLink.fadeIn();
+                }
+
+                domCommentBadge.text(commentArray.length);
+
+                update();
+            });
         });
-    });
+    })();
 }
 
 function GifLabControls(gifLab) {
