@@ -111,7 +111,9 @@ function GifLab() {
 
 function GifLabMenu(gifLab) {
 
-    var domToolbarMenu = $('#toolbar-menu');
+    var domToolbar = $('#toolbar');
+    var domToolbarMenu = domToolbar.find('#toolbar-menu');
+    var domToolbarExtras = domToolbar.find('#toolbar-extras');
     var domFileLink = domToolbarMenu.find('.file-link');
     var domCheckboxRenderRaw = domToolbarMenu.find('#checkbox-render-raw');
     var domFileInput = $('<input type="file">');
@@ -141,7 +143,7 @@ function GifLabMenu(gifLab) {
     var domCommentBox = domModalComment.find('.comment-box');
     var domCommentButtonPrevious = domModalComment.find('.pager-previous');
     var domCommentButtonNext = domModalComment.find('.pager-next');
-    var domCommentLink = domToolbarMenu.find('.comment-link');
+    var domCommentLink = domToolbarExtras.find('.comment-link');
     var domCommentBadge = domCommentLink.find('.badge');
     
     var commentArray = [];

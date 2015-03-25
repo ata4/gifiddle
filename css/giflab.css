@@ -17,6 +17,10 @@
     max-height: 20em;
 }
 
+.navbar-right {
+    margin-right: auto;
+}
+
 .center {
     position: absolute;
     margin: auto;
