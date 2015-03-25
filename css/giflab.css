@@ -8,6 +8,12 @@
     flex: 1;
 }
 
+.color-table div {
+    float: left;
+    width: 8px;
+    height: 8px;
+}
+
 .dropdown-options {
     width: 14em;
 }
@@ -32,7 +38,7 @@
 }
 
 #info-sidebar {
-    width: 24em;
+    width: 26em;
     position: fixed;
     top: 1em;
     right: 1em;

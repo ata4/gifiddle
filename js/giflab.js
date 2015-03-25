@@ -461,16 +461,53 @@ function GifLabInfo(gifLab) {
         }  
     };
     
+    function buildColorTable(ct, ctFlag, sortFlag) {
+        if (!ctFlag) {
+            return 'n/a';
+        }
+        
+        // color table sizes are always base 2, so their square root should always
+        // be a real number
+        var colorTableSize = Math.sqrt(ct.length);
+        var cellSize = 8;
+        
+        var domContainer = $('<div>');
+        
+        var domColorTable = $('<div>');
+        domColorTable.addClass('color-table');
+        domColorTable.css('width', colorTableSize * cellSize + 'px');
+        domColorTable.css('height', colorTableSize * cellSize + 'px');
+
+        for (var y = 0; y < colorTableSize; y++) {
+            for (var x = 0; x < colorTableSize; x++) {
+                var color = ct[y * colorTableSize + x];
+                var domColor = $('<div>');
+                domColor.css('background-color', 'rgb(' + color.join() + ')');
+                domColor.attr('title', color.join());
+                domColorTable.append(domColor);
+            }
+        }
+        
+        domContainer.append(ct.length);
+        if (sortFlag) {
+            domContainer.append(' sorted');
+        }
+        domContainer.append(' colors');
+        domContainer.append(domColorTable);
+
+        return domContainer;
+    }
+    
     function updateHeader(gifFile) {
         var hdr = gifFile.hdr;
         
         domHdrPanel.show();
         
+        hdrTable.empty();
+        
         hdrTable.row('Version', hdr.ver);
         hdrTable.row('Screen size', hdr.width + 'x' + hdr.height);
-        hdrTable.row('Global color table', formatter.boolean(hdr.gctFlag));
-        hdrTable.row('Global color table entries', hdr.gctFlag ? hdr.gct.length : 'n/a');
-        hdrTable.row('Global color table sorted', hdr.gctFlag ? formatter.boolean(hdr.gctSortFlag) : 'n/a');
+        hdrTable.row('Global color table', buildColorTable(hdr.gct, hdr.gctFlag, hdr.gctSortFlag));
         hdrTable.row('Color resolution', formatter.colorRes(hdr.colorRes));
         hdrTable.row('Background color', hdr.bgColor);
         hdrTable.row('Pixel aspect ratio', formatter.aspectRatio(hdr.pixelAspectRatio));
@@ -481,6 +518,7 @@ function GifLabInfo(gifLab) {
     }
     
     var framePrev;
+    var domColorTables;
     
     function updateFrame(gifPlayer) {
         var frame = gifPlayer.getFrame();
@@ -503,9 +541,18 @@ function GifLabInfo(gifLab) {
             imgTable.row('Size', img.width + 'x' + img.height);
             imgTable.row('Position', img.topPos + 'x' + img.leftPos);
             imgTable.row('Interlaced', formatter.boolean(img.interlaced));
-            imgTable.row('Local color table', formatter.boolean(img.lctFlag));
-            imgTable.row('Local color table entries', img.lctFlag ? img.lct.length : 'n/a');
-            imgTable.row('Local color table sorted', img.lctFlag ? formatter.boolean(img.lctSortFlag) : 'n/a');
+            
+            imgTable.row();
+            imgTable.col('Local color table');
+            
+            // generating a HTML color table is pretty expensive, better cache
+            // it for every frame
+            if (!domColorTables[frameIndex]) {
+                domColorTables[frameIndex] = buildColorTable(img.lct, img.lctFlag, img.lctSortFlag);
+            }
+
+            imgTable.col(domColorTables[frameIndex]);
+            
             imgTable.row('Compressed size', formatter.byteSize(img.lzwSize));
             imgTable.row('Uncompressed size', formatter.byteSize(img.pixelsSize));
             imgTable.row('Compression ratio', (img.pixelsSize / img.lzwSize).toFixed(2));
@@ -548,6 +595,7 @@ function GifLabInfo(gifLab) {
     gifLab.events.on('initPlayer', function(gifPlayer) {
         
         framePrev = null;
+        domColorTables = [];
         
         gifPlayer.events.on('ready', function(gifFile) {
             updateHeader(gifFile);
@@ -586,7 +634,11 @@ function Table(domTable) {
                 this.row();
             }
             var domTd = $('<td>');
-            domTd.text(content);
+            if (typeof content === 'string') {
+                domTd.text(content);
+            } else {
+                domTd.append(content);
+            }
             domTr.append(domTd);
             return domTd;
         },
