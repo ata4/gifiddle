@@ -8,13 +8,13 @@
     flex: 1;
 }
 
-.form-menu {
+.dropdown-options {
     width: 14em;
-    padding: 0 1em;
 }
 
-.modal pre {
+.comment-box {
     max-height: 20em;
+    text-shadow: none;
 }
 
 .navbar-right {

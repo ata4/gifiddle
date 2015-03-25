@@ -52,8 +52,7 @@ function GifLab() {
     // set of hosts that have a wildcard ACAO header
     var corsHosts = {
         'imgur.com': true,
-        'tumblr.com': true,
-        'localhost': true
+        'tumblr.com': true
     };
 
     var domViewport = $('#viewport');
@@ -134,7 +133,7 @@ function GifLab() {
             }.bind(this);
 
             xhr.onerror = function() {
-                this.loader.showError('Unable to download GIF.');
+                this.loader.showError('Unable to download GIF: Connection failed');
             }.bind(this);
             
             xhr.open('GET', url, true);
@@ -150,6 +149,11 @@ function GifLabMenu(gifLab) {
     var domToolbar = $('#toolbar');
     var domToolbarMenu = domToolbar.find('#toolbar-menu');
     var domToolbarExtras = domToolbar.find('#toolbar-extras');
+    
+    // prevent persistent dropdowns from disappearing on click
+    $('.dropdown-persistent').click(function(e) {
+        e.stopPropagation();
+    });
     
     // open file link
     (function() {
@@ -184,12 +188,6 @@ function GifLabMenu(gifLab) {
     // options
     (function() {
         var domCheckboxRenderRaw = domToolbarMenu.find('#checkbox-render-raw');
-        var domFormMenu = domToolbarMenu.find('.form-menu');
-        
-        // prevent options drop down form from disappearing on click
-        domFormMenu.click(function(e) {
-            e.stopPropagation();
-        });
 
         gifLab.events.on('initPlayer', function(gifPlayer) {
             domCheckboxRenderRaw.off();
@@ -207,11 +205,10 @@ function GifLabMenu(gifLab) {
     
     // comments link and modal
     (function() {
-        var domModal = $('#modal-comment');
-        var domCommentBox = domModal.find('.comment-box');
-        var domButtonPrevious = domModal.find('.pager-previous');
-        var domButtonNext = domModal.find('.pager-next');
         var domLink = domToolbarExtras.find('.comment-link');
+        var domCommentBox = domLink.find('.comment-box');
+        var domButtonPrevious = domLink.find('.pager-previous');
+        var domButtonNext = domLink.find('.pager-next');
         var domBadge = domLink.find('.badge');
 
         var commentArray = [];
