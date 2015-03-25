@@ -137,12 +137,12 @@ function GifLabMenu(gifLab) {
     
     // open url link and modal
     (function() {
-        var domModalUrl = $('#modal-url');
-        var domButtonUrl = domModalUrl.find('#button-url');
-        var domInputUrl = domModalUrl.find('#input-url');
+        var domModal = $('#modal-url');
+        var domButton = domModal.find('#button-url');
+        var domInput = domModal.find('#input-url');
         
-        domButtonUrl.on('click', function() {
-            gifLab.loadUrl(domInputUrl.val());
+        domButton.on('click', function() {
+            gifLab.loadUrl(domInput.val());
         });
     })();
     
@@ -164,26 +164,26 @@ function GifLabMenu(gifLab) {
         });
     })();
     
-    // comments modal
+    // comments link and modal
     (function() {
-        var domModalComment = $('#modal-comment');
-        var domCommentBox = domModalComment.find('.comment-box');
-        var domCommentButtonPrevious = domModalComment.find('.pager-previous');
-        var domCommentButtonNext = domModalComment.find('.pager-next');
-        var domCommentLink = domToolbarExtras.find('.comment-link');
-        var domCommentBadge = domCommentLink.find('.badge');
+        var domModal = $('#modal-comment');
+        var domCommentBox = domModal.find('.comment-box');
+        var domButtonPrevious = domModal.find('.pager-previous');
+        var domButtonNext = domModal.find('.pager-next');
+        var domLink = domToolbarExtras.find('.comment-link');
+        var domBadge = domLink.find('.badge');
 
         var commentArray = [];
         var commentIndex = 0;
 
-        domCommentLink.hide();
+        domLink.hide();
 
-        domCommentButtonPrevious.on('click', function() {
+        domButtonPrevious.on('click', function() {
             commentIndex--;
             update();
         });
 
-        domCommentButtonNext.on('click', function() {
+        domButtonNext.on('click', function() {
             commentIndex++;
             update();
         });
@@ -191,19 +191,19 @@ function GifLabMenu(gifLab) {
         function update() {
             if (commentArray.length <= 1) {
                 commentIndex = 0;
-                domCommentButtonPrevious.hide();
-                domCommentButtonNext.hide();
+                domButtonPrevious.hide();
+                domButtonNext.hide();
             } else if (commentIndex >= commentArray.length - 1) {
                 commentIndex = commentArray.length - 1;
-                domCommentButtonPrevious.show();
-                domCommentButtonNext.hide();
+                domButtonPrevious.show();
+                domButtonNext.hide();
             } else if (commentIndex <= 0) {
                 commentIndex = 0;
-                domCommentButtonPrevious.hide();
-                domCommentButtonNext.show();
+                domButtonPrevious.hide();
+                domButtonNext.show();
             } else {
-                domCommentButtonPrevious.show();
-                domCommentButtonNext.show();
+                domButtonPrevious.show();
+                domButtonNext.show();
             }
 
             if (commentArray.length > 0) {
@@ -218,14 +218,17 @@ function GifLabMenu(gifLab) {
                 commentArray = gifFile.comments;
                 commentIndex = 0;
 
+                // hide comments link if there are no comments
                 if (commentArray.length === 0) {
-                    domCommentLink.fadeOut();
+                    domLink.fadeOut();
                 } else {
-                    domCommentLink.fadeIn();
+                    domLink.fadeIn();
                 }
 
-                domCommentBadge.text(commentArray.length);
+                // update comment count badge
+                domBadge.text(commentArray.length);
 
+                // update modal buttons
                 update();
             });
         });
