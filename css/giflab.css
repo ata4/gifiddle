@@ -17,7 +17,8 @@
 }
 
 .color-table {
-    width: 129px;
+    display: inline-block;
+    max-width: 129px;
     border-bottom: 1px solid black;
     border-right: 1px solid black;
 }
