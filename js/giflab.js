@@ -477,18 +477,20 @@ function GifLabInfo(gifLab) {
             domColorTable.append(domColor);
         }
         
-        var domContainer = $('<div>');
+        var domText = $('<p>');
         
-        domContainer.append(ct.length);
+        domText.append(ct.length);
         
         // never seen this one being set in any file, but well... why not?
         if (sortFlag) {
-            domContainer.append(' sorted');
+            domText.append(' sorted');
         }
         
-        domContainer.append(' colors');
+        domText.append(' colors');
+        
+        var domContainer = $('<div>');
+        domContainer.append(domText);
         domContainer.append(domColorTable);
-
         return domContainer;
     }
     
