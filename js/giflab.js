@@ -466,7 +466,6 @@ function GifLabInfo(gifLab) {
             return 'n/a';
         }
         
-        var domContainer = $('<div>');
         var domColorTable = $('<div>');
         domColorTable.addClass('color-table');
 
@@ -478,10 +477,15 @@ function GifLabInfo(gifLab) {
             domColorTable.append(domColor);
         }
         
+        var domContainer = $('<div>');
+        
         domContainer.append(ct.length);
+        
+        // never seen this one being set in any file, but well... why not?
         if (sortFlag) {
             domContainer.append(' sorted');
         }
+        
         domContainer.append(' colors');
         domContainer.append(domColorTable);
 
