@@ -8,13 +8,14 @@ function GifPlayer(canvas) {
     var frameIndexPrev = 1;
     var framePrev = null;
     var loopCount = 0;
-    var interval = null;
     var timeout = null;
     var playing = false;
     var ready = false;
+    var userInput = false;
+    
     var renderRaw = false;
     var renderBGColor = false;
-    var strictDelays = false;
+    var strict = false;
     
     function render(frameIndex) {
         var frame = instance.getFrame(frameIndex);
@@ -44,7 +45,7 @@ function GifPlayer(canvas) {
 
         framePrev = frame;
     }
-    
+        
     var instance = {
         events: new Events(),
         load: function(gifFile) {
@@ -59,10 +60,8 @@ function GifPlayer(canvas) {
             this.events.emit('ready', gif);
         },
         play: function() {
-            var frameCount = this.getFrameCount();
-            
             // don't try to animate static GIFs
-            if (frameCount <= 1) {
+            if (this.getFrameCount() <= 1) {
                 return;
             }
 
@@ -71,9 +70,20 @@ function GifPlayer(canvas) {
                 return;
             }
             
-            var fixDelay = function(delay) {
+            // GIF87a: "There is no pause between images. Each is processed
+            // immediately as seen by the decoder."
+            if (gif.hdr.ver === '87a' && strict) {
+                this.setLast();
+                return;
+            }
+            
+            var that = this;
+            
+            loopCount = 0;
+            
+            function fixDelay(delay) {
                 // override zero delays if enabled
-                if (delay === 0 && !strictDelays) {
+                if (!strict && delay === 0) {
                     if (gif.hdr.ver === '89a') {
                         // 10 FPS, default behavior in most browsers
                         delay = 10;
@@ -85,85 +95,71 @@ function GifPlayer(canvas) {
                 
                 // convert to milliseconds
                 return delay * 10;
-            };
-            
-            var constantDelay = this.getFrame(0).getDelayTime();
-
-            // check if the delay is the same for all frames
-            for (var i = 1; i < frameCount; i++) {
-                if (this.getFrame(i).getDelayTime() !== constantDelay) {
-                    // delays are not constant
-                    constantDelay = -1;
-                    break;
-                }
             }
             
-            if (constantDelay !== -1) {
-                constantDelay = fixDelay(constantDelay);
-            }
-            
-            loopCount = 0;
-
-            var playNext = function playNext() {
-                this.setNext();
+            function playNext() {
+                that.setNext();
                 
                 // check if the current frame is the last one
-                if (frameIndexCurr === this.getFrameCount() - 1) {
+                if (that.getFrameIndex() === that.getFrameCount() - 1) {
                     loopCount++;
                     
                     // pause if there's no loop count
                     if (gif.loopCount === -1) {
-                        this.pause();
+                        that.pause();
                         return false;
                     }
                     
                     // pause if the loop count has been reached
                     if (gif.loopCount > 0 && loopCount >= gif.loopCount) {
-                        this.pause();
+                        that.pause();
                         return false;
                     }
                 }
                 
                 return true;
-            }.bind(this);
+            }
+            
+            function playNextLoop() {
+                if (playNext()) {
+                    playLoop();
+                }
+            }
             
             playing = true;
-
-            var playLoop = function() {                
-                if (constantDelay === 0) {
-                    // all frames have zero delay, so simply render the last frame
-                    this.setLast();
+            
+            function playLoop() {
+                do {
+                    var frame = that.getFrame();
+                    var gce = frame.gce;
+                    var delay = fixDelay(gce ? gce.delayTime : 0);
                     
-                    // this GIF can't be played
-                    playing = false;
-                } else if (constantDelay > 0) {
-                    // play in inverval with constant delay
-                    interval = setInterval(function() {
-                        if (!playNext()) {
-                            return;
-                        }
-                    }, constantDelay);
-                } else {
-                    // play with variable delays
-                    var delay = fixDelay(this.getFrame().getDelayTime());
-                    
-                    // render zero delay frames instantly
-                    while (delay === 0) {
-                        if (!playNext()) {
-                            return;
-                        }
-                        delay = fixDelay(this.getFrame().getDelayTime());
+                    if (userInput) {
+                        that.events.emit('userInputEnd');
                     }
                     
-                    // play next frame with delay
-                    timeout = setTimeout(function() {
+                    userInput = gce ? gce.userInput : false;
+                    
+                    if (userInput) {
+                        that.events.emit('userInputStart', delay);
+                        
+                        // pause when waiting for user input infinitely
+                        if (delay === 0) {
+                            return;
+                        }
+                    }
+                    
+                    if (delay > 0) {
+                        // play next frame with delay
+                        timeout = setTimeout(playNextLoop, delay);
+                    } else {
+                        // play next frame immediately
                         if (!playNext()) {
                             return;
                         }
-                        playLoop();
-                    }.bind(this), delay);
-                }
-            }.bind(this);
+                    }
+                } while(delay === 0);
+            }
             
             playLoop();
             
@@ -181,11 +177,10 @@ function GifPlayer(canvas) {
                 timeout = null;
             }
 
-            if (interval) {
-                clearInterval(interval);
-                interval = null;
+            if (userInput) {
+                this.events.emit('userInputEnd');
             }
-
+            
             playing = false;
             
             this.events.emit('pause');
@@ -222,6 +217,9 @@ function GifPlayer(canvas) {
         },
         setLast: function() {
             this.setFrameIndex(this.getFrameCount() - 1);
+        },
+        isLastFrame: function() {
+            return this.getFrameIndex() === this.getFrameCount() - 1;
         },
         setFrameIndex: function(frameIndex) {
             var frameCount = this.getFrameCount();

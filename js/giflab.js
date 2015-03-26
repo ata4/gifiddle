@@ -5,6 +5,7 @@ $(function() {
     new GifLabMenu(gifLab);
     new GifLabInfo(gifLab);
     new GifLabControls(gifLab);
+    new GifLabUserInput(gifLab);
     
     // auto-load image in parameters
     var url = document.URL;
@@ -85,7 +86,12 @@ function GifLab() {
                     this.loadGif(gifFile);
                 }.bind(this));
             } catch (ex) {
-                this.loader.showError('GIF error: ' + ex.message);
+                if (ex instanceof GifError) {
+                    this.loader.showError('GIF error: ' + ex.message);
+                    console.error(ex);
+                } else {
+                    throw ex;
+                }
             }
         },
         loadBlob: function(blob) {
@@ -363,6 +369,64 @@ function GifLabControls(gifLab) {
             gifPlayer.pause();
             gifPlayer.setFrameIndex(parseInt(event.target.value));
             updateTooltip(event.target.value);
+        });
+    });
+}
+
+function GifLabUserInput(gifLab) {
+    
+    var domUserInput = $('#user-input');
+    var domCountdown = domUserInput.find('.countdown');
+    var countdownTimer = null;
+    var countdown;
+    
+    domUserInput.hide();
+    
+    gifLab.events.on('initPlayer', function(gifPlayer) {
+        domCountdown.empty();
+        
+        domUserInput.fadeOut();
+        domUserInput.off();
+        domUserInput.on('click', function() {
+            gifPlayer.pause();
+            if (gifPlayer.isLastFrame()) {
+                gifPlayer.setFirst();
+            } else {
+                gifPlayer.setNext();
+                gifPlayer.play();                
+            }
+        });
+        
+        function updateCountdown() {
+            domCountdown.text('(' + countdown + ')');
+            
+            countdown--;
+            if (countdown > 0) {
+                countdownTimer = setTimeout(updateCountdown, 1000);
+            }
+        }
+        
+        function stopCountdown() {
+            if (countdownTimer) {
+                clearTimeout(countdownTimer);
+                countdownTimer = null;
+            }
+        }
+        
+        gifPlayer.events.on('userInputStart', function(delay) {
+            domCountdown.empty();
+            domUserInput.show();
+            
+            if (delay > 0) {
+                countdown = Math.ceil(delay / 1000);
+                updateCountdown();
+            }
+        });
+
+        gifPlayer.events.on('userInputEnd', function() {
+            domUserInput.hide();
+            
+            stopCountdown();
         });
     });
 }

@@ -48,7 +48,7 @@ GifFile.prototype.load = function(buffer, callback) {
 
 function GifFrame(hdr, img, pte, gce) {
     if (!img && !pte) {
-        throw new Error("No graphics data");
+        throw new GifError('No graphics data');
     }
     
     this.img = img;
@@ -85,7 +85,7 @@ function GifFrame(hdr, img, pte, gce) {
         } else if (hdr.gctFlag) {
             colorTable = hdr.gct;
         } else {
-            throw new Error("No color table defined");
+            throw new GifError('No color table defined');
         }
 
         for (var i = 0; i < numPixels; i++) {
@@ -113,7 +113,7 @@ function GifFrame(hdr, img, pte, gce) {
         // set in the GCE. This also means we can't continue without.
         var colorTable = hdr.gct;
         if (!colorTable) {
-            throw new Error("No color table defined");
+            throw new GifError('No color table defined');
         }
 
         // render background
@@ -181,16 +181,6 @@ function GifFrame(hdr, img, pte, gce) {
 };
 
 GifFrame.prototype = {
-    getDelayTime: function() {
-        var delay = 0;
-        
-        // delay requires a graphics control extension block
-        if (this.gce) {
-            delay = this.gce.delayTime;
-        }
-        
-        return delay;
-    },
     blit: function(ctx) {
         // keep a copy of the original rectangle for later disposal
         if (this.gce && this.gce.disposalMethod === 3) {
@@ -408,13 +398,12 @@ GifParser.prototype = {
             hdr.sig = st.readString(3);
             hdr.ver = st.readString(3);
 
-            // XXX: This should probably be handled more nicely.
             if (hdr.sig !== 'GIF') {
-                throw new Error('Not a GIF file');
+                throw new GifError('Not a GIF file');
             }
 
             if (hdr.ver !== '87a' && hdr.ver !== '89a') {
-                throw new Error('Unsupported GIF version');
+                throw new GifError('Unsupported GIF version');
             }
 
             hdr.width = st.readUint16();
@@ -621,7 +610,7 @@ GifParser.prototype = {
                         that.handleEOF && that.handleEOF(block);
                         break;
                     default:
-                        throw new Error('Unknown block: 0x' + block.sentinel.toString(16)); // TODO: Pad this with a 0.
+                        throw new GifError('Unknown block: 0x' + block.sentinel.toString(16)); // TODO: Pad this with a 0.
                 }
             } while (block.type !== 'eof');
         }
@@ -629,6 +618,11 @@ GifParser.prototype = {
         parseBlocks();
     }
 };
+
+function GifError() {
+}
+
+GifError.prototype = new Error();
 
 function Stream(buffer) {
     

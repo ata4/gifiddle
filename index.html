@@ -41,42 +41,40 @@
         <nav id="toolbar" class="flex-container navbar navbar-default navbar-fixed-bottom">   
             <div id="toolbar-menu" class="navbar-inner flex">
                 <a class="navbar-brand" href="#">GIFLab</a>
-                <div class="collapse navbar-collapse">
-                    <ul class="nav navbar-nav">
-                        <li class="dropdown">
-                            <a id="drop1" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
-                                <i class="fa fa-file-image-o"></i> Open <span class="caret"></span>
-                            </a>
-                            <ul class="dropdown-menu" role="menu">
-                                <li role="presentation">
-                                    <a role="menuitem" tabindex="-1" href="#" class="file-link">Local file</a>
-                                </li>
-                                <li role="presentation">
-                                    <a role="menuitem" tabindex="-1" href="#" data-toggle="modal" data-target="#modal-url">Remote file</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="dropdown">
-                            <a class="dropdown-toggle" href="#" data-toggle="dropdown">
-                                <i class="fa fa-cogs"></i> Options <strong class="caret"></strong>
-                            </a>
-                            <div class="dropdown-menu dropdown-persistent dropdown-options">
-                                <div class="panel-body">
-                                    <div class="checkbox">
-                                      <label>
-                                        <input type="checkbox" id="checkbox-render-raw">Render raw frames
-                                      </label>
-                                    </div>
-                                    <div class="checkbox">
-                                      <label>
-                                        <input type="checkbox" id="checkbox-show-info">Show information
-                                      </label>
-                                    </div>
+                <ul class="nav navbar-nav">
+                    <li class="dropdown">
+                        <a id="drop1" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
+                            <i class="fa fa-file-image-o"></i> Open <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li role="presentation">
+                                <a role="menuitem" tabindex="-1" href="#" class="file-link">Local file</a>
+                            </li>
+                            <li role="presentation">
+                                <a role="menuitem" tabindex="-1" href="#" data-toggle="modal" data-target="#modal-url">Remote file</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" href="#" data-toggle="dropdown">
+                            <i class="fa fa-cogs"></i> Options <strong class="caret"></strong>
+                        </a>
+                        <div class="dropdown-menu dropdown-persistent dropdown-options">
+                            <div class="panel-body">
+                                <div class="checkbox">
+                                  <label>
+                                    <input type="checkbox" id="checkbox-render-raw">Render raw frames
+                                  </label>
+                                </div>
+                                <div class="checkbox">
+                                  <label>
+                                    <input type="checkbox" id="checkbox-show-info">Show information
+                                  </label>
                                 </div>
                             </div>
-                        </li>
-                    </ul>
-                </div>
+                        </div>
+                    </li>
+                </ul>
             </div>
             
             <div id="toolbar-controls" class="flex-container">
@@ -189,7 +187,8 @@
                 <div class="panel-heading">
                     <a data-toggle="collapse" href="#info-pte">
                         <h5 class="panel-title">
-                            <i class="fa fa-align-left"></i> Plain Text Extension
+                            <i class="fa fa-align-left"></i>
+                            Plain Text Extension
                         </h5>
                     </a>
                 </div>
@@ -199,5 +198,7 @@
                 </div>
             </div>
         </div>
+        
+        <a href="#" id="user-input" class="btn btn-default btn-primary btn-block">Continue <span class="countdown"></span></a>
     </body>
 </html>

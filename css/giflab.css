@@ -51,7 +51,7 @@
     position: fixed;
     top: 1em;
     right: 1em;
-    bottom: 2em;
+    bottom: 4em;
     overflow: auto;
     z-index: 1000;
 }
@@ -72,10 +72,26 @@
     margin: 1em;
 }
 
+#user-input {
+    width: 10em;
+    text-align: center;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 5em;
+    margin: auto;
+    z-index: 1000;
+}
+
 #viewport {
     background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEX////MzMw46qqDAAAAEElEQVQI12Ng+M+AFeEQBgB+vw/xWs16mgAAAABJRU5ErkJggg==');
     box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.5);
     z-index: 999;
+}
+
+#toolbar-menu {
+    height: 4em;
+    min-width: 24em;
 }
 
 #toolbar-controls .slider {
