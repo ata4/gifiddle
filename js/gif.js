@@ -132,7 +132,7 @@ function GifFrame(hdr, img, pte, gce) {
 
             // "The selection of font and size is left to the discretion of
             // the decoder." Well, who needs consistency, anyway?
-            var fontSize = (cellHeight * 0.8).toFixed(2) + 'pt'
+            var fontSize = (cellHeight * 0.8).toFixed(2) + 'pt';
             ctx.font = fontSize + ' "Lucida Console", Monaco, monospace';
 
             ctx.textBaseline = 'middle';
