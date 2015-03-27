@@ -85,7 +85,7 @@ function GifPlayer(canvas) {
                 // undefined behavior, but most browsers change delays shorter
                 // than 20 ms to 100 ms to avoid high CPU usage or even infinite
                 // loops.
-                if (gif.loopCount !== -1 && delay <= 20) {
+                if (gif.loopCount !== -1 && delay <= 2) {
                     return 10;
                 }
                 
