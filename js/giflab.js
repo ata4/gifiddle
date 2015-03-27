@@ -59,6 +59,8 @@ function GifLab() {
 
     var domViewport = $('#viewport');
     
+    var title = $('title').text();
+    
     var player = null;
     
     return {
@@ -96,6 +98,8 @@ function GifLab() {
         },
         loadBlob: function(blob) {
             this.loader.showLoad();
+            
+            document.title = title + ': ' + blob.name;
 
             var reader = new FileReader();
             reader.addEventListener('load', function(event) {
@@ -116,6 +120,15 @@ function GifLab() {
             // many sites don't provide a wildcard ACAO header, so use a CORS proxy
             if (!corsHosts[hostname]) {
                 url = 'https://cors-anywhere.herokuapp.com/' + url;
+            }
+            
+            var filenameIndex = parser.pathname.lastIndexOf('/');
+            
+            if (filenameIndex > -1) {
+                var filename = parser.pathname.substring(filenameIndex + 1);
+                document.title = title + ': ' + filename;
+            } else {
+                document.title = title;
             }
 
             // Note: jQuery's .ajax() doesn't support binary files well, therefore
@@ -455,7 +468,9 @@ function GifLabInfo(gifLab) {
         if (event.target.checked) {
             domSidebar.fadeIn();
             if (framePrev !== null) {
-                updateFrame(framePrev);
+                updateFrame(framePrev, frameIndexPrev);
+                framePrev = null;
+                frameIndexPrev = null;
             }
         } else {
             domSidebar.fadeOut();
@@ -578,18 +593,17 @@ function GifLabInfo(gifLab) {
     }
     
     var framePrev;
+    var frameIndexPrev;
     var domColorTables;
     
-    function updateFrame(gifPlayer) {
-        var frame = gifPlayer.getFrame();
+    function updateFrame(frame, frameIndex) {
         framePrev = frame;
+        frameIndexPrev = frameIndex;
         
         // don't produce overhead when the sidebar is hidden
         if (!domSidebar.is(':visible')) {
             return;
         }
-        
-        var frameIndex = gifPlayer.getFrameIndex();
 
         imgTable.empty();
         
@@ -662,7 +676,7 @@ function GifLabInfo(gifLab) {
         });
         
         gifPlayer.events.on('update', function() {
-            updateFrame(gifPlayer);
+            updateFrame(gifPlayer.getFrame(), gifPlayer.getFrameIndex());
         });
     });
 }
