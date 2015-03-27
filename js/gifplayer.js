@@ -121,21 +121,21 @@ function GifPlayer(canvas) {
             for (var i = 0; i < frameCount; i++) {
                 var frame = this.getFrame(i);
                 var gce = frame.gce;
-                var delay = gce ? gce.delayTime : -1;
-                var userInput = gce ? gce.userInput : false;
+                var frameDelay = gce ? gce.delayTime : -1;
+                var frameUserInput = gce ? gce.userInput : false;
                 
                 // frames with user input need to be handled by playLoop()
                 // further below
-                if (userInput) {
+                if (frameUserInput) {
                     globalDelay = -2;
                     break;
                 }
  
                 if (i === 0) {
                     // first frame, set reference delay
-                    globalDelay = delay;
+                    globalDelay = frameDelay;
                 } else {
-                    if (delay !== globalDelay) {
+                    if (frameDelay !== globalDelay) {
                         // frame has a different delay, invalidate global delay
                         globalDelay = -2;
                         break;
@@ -213,9 +213,10 @@ function GifPlayer(canvas) {
                 clearTimeout(timeout);
                 timeout = null;
             }
-
+            
             if (userInput) {
                 this.events.emit('userInputEnd');
+                userInput = false;
             }
             
             playing = false;
