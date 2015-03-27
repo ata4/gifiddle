@@ -6,6 +6,7 @@ $(function() {
     new GifLabInfo(gifLab);
     new GifLabControls(gifLab);
     new GifLabUserInput(gifLab);
+    new GifLabAutoplay(gifLab);
     
     // auto-load image in parameters
     var url = document.URL;
@@ -350,7 +351,6 @@ function GifLabControls(gifLab) {
 
             if (frameCount > 1) {
                 domControls.fadeIn();
-                gifPlayer.play();
             } else {
                 domControls.fadeOut();
             }
@@ -442,6 +442,17 @@ function GifLabUserInput(gifLab) {
             domUserInput.hide();
             
             stopCountdown();
+        });
+    });
+}
+
+function GifLabAutoplay(gifLab) {
+    gifLab.events.on('initPlayer', function(gifPlayer) {
+        gifPlayer.events.on('ready', function() {
+            var frameCount = gifPlayer.getFrameCount();
+            if (frameCount > 1) {
+                gifPlayer.play();
+            }
         });
     });
 }
