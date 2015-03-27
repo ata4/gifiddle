@@ -93,6 +93,7 @@ function GifLab() {
                     this.loader.showError('GIF error: ' + ex.message);
                     console.error(ex);
                 } else {
+                    // not our business
                     throw ex;
                 }
             }
@@ -131,7 +132,9 @@ function GifLab() {
             } else {
                 document.title = title;
             }
-
+            
+            window.location.hash = '';
+            
             // Note: jQuery's .ajax() doesn't support binary files well, therefore
             // a direct XHR level 2 object is used instead
             var xhr = new XMLHttpRequest();
@@ -143,6 +146,7 @@ function GifLab() {
             xhr.onload = function () {
                 // only allow 'OK'
                 if (xhr.status === 200) {
+                    window.location.hash = url;
                     this.loadBuffer(xhr.response);
                 } else {
                     this.loader.showError('Unable to download GIF: ' + new HttpStatus(xhr.status));
