@@ -114,6 +114,45 @@ function GifPlayer(canvas) {
                 
                 return true;
             }
+            
+            // analyze the delay of all frames for some special cases
+            var globalDelay = -1;
+            var frameCount = this.getFrameCount();
+            for (var i = 0; i < frameCount; i++) {
+                var frame = this.getFrame(i);
+                var gce = frame.gce;
+                var delay = gce ? gce.delayTime : -1;
+                var userInput = gce ? gce.userInput : false;
+                
+                // frames with user input need to be handled by playLoop()
+                // further below
+                if (userInput) {
+                    globalDelay = -2;
+                    break;
+                }
+ 
+                if (i === 0) {
+                    // first frame, set reference delay
+                    globalDelay = delay;
+                } else {
+                    if (delay !== globalDelay) {
+                        // frame has a different delay, invalidate global delay
+                        globalDelay = -2;
+                        break;
+                    }
+                }
+            }
+            
+            // check if there's a global delay set for all frames
+            if (globalDelay !== -2) {
+                globalDelay = fixDelay(globalDelay);
+                if (globalDelay === 0) {
+                    // there's no point in playing the animation, simply display
+                    // the last frame instead of spamming update events
+                    this.setLast();
+                    return;
+                }
+            }
 
             playing = true;
             
