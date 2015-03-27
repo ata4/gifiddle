@@ -206,11 +206,14 @@ function GifLabMenu(gifLab) {
     // open url link and modal
     (function() {
         var domModal = $('#modal-url');
-        var domButton = domModal.find('#button-url');
-        var domInput = domModal.find('#input-url');
+        var domForm = domModal.find('#modal-url-form');
+        var domInput = domModal.find('#modal-url-input');
         
-        domButton.on('click', function() {
-            gifLab.loadUrl(domInput.val());
+        domForm.validator().on('submit', function(event) {
+            if (!event.isDefaultPrevented()) {
+                gifLab.loadUrl(domInput.val());
+                domModal.modal('hide');
+            }
         });
     })();
     

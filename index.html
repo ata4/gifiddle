@@ -44,7 +44,7 @@
         
         <nav id="toolbar" class="flex-container navbar navbar-default navbar-fixed-bottom">   
             <div id="toolbar-menu" class="navbar-inner flex">
-                <a class="navbar-brand" href="#">GIFLab</a>
+                <a class="navbar-brand">GIFLab</a>
                 <ul class="nav navbar-nav">
                     <li class="dropdown">
                         <a id="drop1" class="dropdown-toggle" data-toggle="dropdown" role="button">
@@ -113,9 +113,9 @@
                                 <pre class="comment-box">
                                 </pre>
                                 <div class="flex-container">
-                                    <div><a class="pager-previous" href="#"><i class="fa fa-arrow-left"></i> Previous</a></div>
+                                    <div><a class="pager-previous"><i class="fa fa-arrow-left"></i> Previous</a></div>
                                     <div class="flex"></div> 
-                                    <div><a class="pager-next" href="#">Next <i class="fa fa-arrow-right"></i></a></div>
+                                    <div><a class="pager-next">Next <i class="fa fa-arrow-right"></i></a></div>
                                 </div>
                             </div>
                         </div>
@@ -126,21 +126,22 @@
         
         <div class="modal fade" id="modal-url" tabindex="-1" role="dialog" aria-labelledby="modal-url-label" aria-hidden="true">
             <div class="modal-dialog">
-                <div class="modal-content">
+                <form id="modal-url-form" class="modal-content" role="form">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         <h4 class="modal-title" id="modal-url-label">Open remote GIF file</h4>
                     </div>
                     <div class="modal-body">
                         <div class="form-group">
-                            <input class="form-control" id="input-url" placeholder="URL" type="url" onClick="this.select();">
+                            <input class="form-control" id="modal-url-input" placeholder="URL" type="url" onClick="this.select();">
+                            <div class="help-block with-errors"></div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" data-dismiss="modal" id="button-url">Load</button>
+                        <button type="submit" class="btn btn-primary">Load</button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
 
