@@ -110,6 +110,10 @@ function GifLab() {
             reader.readAsArrayBuffer(blob);
         },
         loadUrl: function(url) {
+            if (url.length === 0) {
+                return;
+            }
+            
             // get hostname
             var parser = document.createElement('a');
             parser.href = url;
