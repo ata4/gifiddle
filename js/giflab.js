@@ -427,12 +427,14 @@ function GifLabUserInput(gifLab) {
         }
         
         gifPlayer.events.on('userInputStart', function(delay) {
-            domCountdown.empty();
-            domUserInput.show();
-            
-            if (delay > 0) {
-                countdown = Math.ceil(delay / 1000);
-                updateCountdown();
+            if (delay === 0 || delay > 100) {
+                domCountdown.empty();
+                domUserInput.show();
+                
+                if (delay > 100) {
+                    countdown = Math.ceil(delay / 100);
+                    updateCountdown();
+                }
             }
         });
 

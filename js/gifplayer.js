@@ -15,7 +15,6 @@ function GifPlayer(canvas) {
     
     var renderRaw = false;
     var renderBGColor = false;
-    var strict = false;
     
     function render(frameIndex) {
         var frame = instance.getFrame(frameIndex);
@@ -69,39 +68,35 @@ function GifPlayer(canvas) {
             if (playing) {
                 return;
             }
-            
-            // GIF87a: "There is no pause between images. Each is processed
-            // immediately as seen by the decoder."
-            if (gif.hdr.ver === '87a' && strict) {
-                this.setLast();
-                return;
-            }
-            
+                        
             var that = this;
             
             loopCount = 0;
             
             function fixDelay(delay) {
-                // override zero delays if enabled
-                if (!strict && delay === 0) {
-                    if (gif.hdr.ver === '89a') {
-                        // 10 FPS, default behavior in most browsers
-                        delay = 10;
-                    } else {
-                        // 5 FPS, best frame rate for most ancient animations
-                        delay = 20;
-                    }
+                // Set a fixed delay of 200 ms for GIF87a files to emulate old
+                // decoders running on old hardware, which is what most ancient
+                // animated GIFs are designed for.
+                if (gif.hdr.ver === '87a' && delay === -1) {
+                    return 20;
                 }
                 
-                // convert to milliseconds
-                return delay * 10;
+                // GIFs with loop extensions and no frame delays is somewhat
+                // undefined behavior, but most browsers change delays shorter
+                // than 20 ms to 100 ms to avoid high CPU usage or even infinite
+                // loops.
+                if (gif.loopCount !== -1 && delay <= 20) {
+                    return 10;
+                }
+                
+                return delay;
             }
             
             function playNext() {
                 that.setNext();
                 
                 // check if the current frame is the last one
-                if (that.getFrameIndex() === that.getFrameCount() - 1) {
+                if (that.isLastFrame()) {
                     loopCount++;
                     
                     // pause if there's no loop count
@@ -119,27 +114,23 @@ function GifPlayer(canvas) {
                 
                 return true;
             }
-            
-            function playNextLoop() {
-                if (playNext()) {
-                    playLoop();
-                }
-            }
-            
+
             playing = true;
             
             function playLoop() {
                 do {
                     var frame = that.getFrame();
                     var gce = frame.gce;
-                    var delay = fixDelay(gce ? gce.delayTime : 0);
+                    var delay = gce ? gce.delayTime : -1;
                     
+                    // cancel previous user input
                     if (userInput) {
                         that.events.emit('userInputEnd');
                     }
                     
                     userInput = gce ? gce.userInput : false;
                     
+                    // does the next frame require user input?
                     if (userInput) {
                         that.events.emit('userInputStart', delay);
                         
@@ -149,16 +140,23 @@ function GifPlayer(canvas) {
                         }
                     }
                     
+                    // override delay where required
+                    delay = fixDelay(delay);
+                    
                     if (delay > 0) {
                         // play next frame with delay
-                        timeout = setTimeout(playNextLoop, delay);
+                        timeout = setTimeout(function () {
+                            if (playNext()) {
+                                playLoop();
+                            }
+                        }, delay * 10);
                     } else {
                         // play next frame immediately
                         if (!playNext()) {
                             return;
                         }
                     }
-                } while(delay === 0);
+                } while (delay <= 0);
             }
             
             playLoop();
