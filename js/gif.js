@@ -1,8 +1,8 @@
 'use strict';
 
-function GifParser() {}
+function Gif() {}
 
-GifParser.prototype = {
+Gif.prototype = {
     handleBlock: function(block) {  
     },
     parse: function(buffer) {

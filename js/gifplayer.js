@@ -356,17 +356,14 @@ function GifFile() {
 GifFile.prototype.load = function(buffer, callback) {
     
     var gce;
-    var that = this;
-    var parser = new GifParser();
-    
-    parser.handleBlock = function(block) {
+    var handleBlock = function(block) {
         switch (block.type) {
             case 'hdr':
-                that.hdr = block;
+                this.hdr = block;
                 break;
                 
             case 'img':
-                that.frames.push(new GifFrame(that.hdr, block, null, gce));
+                this.frames.push(new GifFrame(this.hdr, block, null, gce));
                 gce = null;
                 break;
                 
@@ -379,17 +376,17 @@ GifFile.prototype.load = function(buffer, callback) {
                     case 'com':
                         // convert line breaks
                         var comment = block.comment.replace(/\r\n?/g, '\n');
-                        that.comments.push(comment);
+                        this.comments.push(comment);
                         break;
 
                     case 'pte':
-                        that.frames.push(new GifFrame(that.hdr, null, block, gce));
+                        this.frames.push(new GifFrame(this.hdr, null, block, gce));
                         gce = null;
                         break;
                         
                     case 'app':
                         if (block.identifier === 'NETSCAPE' && block.subBlockID === 1) {
-                            that.loopCount = block.loopCount;
+                            this.loopCount = block.loopCount;
                         }
                         break;
                 }
@@ -399,9 +396,22 @@ GifFile.prototype.load = function(buffer, callback) {
                 callback && callback();
                 break;
         }
-    };
-
-    parser.parse(buffer);
+    }.bind(this);
+    
+    // load GIF in a worker if possible
+    if (!!window.Worker) {
+        var gifWorker = new Worker('js/gifworker.js');
+        
+        gifWorker.onmessage = function(evt) {
+            handleBlock(evt.data);
+        };
+        
+        gifWorker.postMessage(buffer);
+    } else {
+        var gif = new Gif();
+        gif.handleBlock = handleBlock;
+        gif.parse(buffer);
+    }
 };
 
 function GifFrame(hdr, img, pte, gce) {
