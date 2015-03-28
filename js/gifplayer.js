@@ -358,37 +358,49 @@ GifFile.prototype.load = function(buffer, callback) {
     var gce;
     var that = this;
     var parser = new GifParser();
+    
+    parser.handleBlock = function(block) {
+        switch (block.type) {
+            case 'hdr':
+                that.hdr = block;
+                break;
+                
+            case 'img':
+                that.frames.push(new GifFrame(that.hdr, block, null, gce));
+                gce = null;
+                break;
+                
+            case 'ext':
+                switch (block.extType) {
+                    case 'gce':
+                        gce = block;
+                        break;
 
-    parser.handleHeader = function(block) {
-        that.hdr = block;
-    };
-    parser.handleGCExt = function(block) {
-        gce = block;
-    };
-    parser.handleComExt = function(block) {
-        // convert line breaks
-        var comment = block.comment.replace(/\r\n?/g, '\n');
-        that.comments.push(comment);
-    };
-    parser.handlePTExt = function(block) {
-        that.frames.push(new GifFrame(that.hdr, null, block, gce));
-        gce = null;
-    };
-    parser.handleImg = function(block) {
-        that.frames.push(new GifFrame(that.hdr, block, null, gce));
-        gce = null;
-    };
-    parser.handleAppExt = {
-        NETSCAPE: function(block) {
-            if (block.subBlockID === 1) {
-                that.loopCount = block.loopCount;
-            }
+                    case 'com':
+                        // convert line breaks
+                        var comment = block.comment.replace(/\r\n?/g, '\n');
+                        that.comments.push(comment);
+                        break;
+
+                    case 'pte':
+                        that.frames.push(new GifFrame(that.hdr, null, block, gce));
+                        gce = null;
+                        break;
+                        
+                    case 'app':
+                        if (block.identifier === 'NETSCAPE' && block.subBlockID === 1) {
+                            that.loopCount = block.loopCount;
+                        }
+                        break;
+                }
+                break;
+                
+            case 'eof':
+                callback && callback();
+                break;
         }
     };
-    parser.handleEOF = function(block) {
-        callback && callback();
-    };
-    
+
     parser.parse(buffer);
 };
 

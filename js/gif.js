@@ -3,9 +3,10 @@
 function GifParser() {}
 
 GifParser.prototype = {
+    handleBlock: function(block) {  
+    },
     parse: function(buffer) {
         var st = new GifStream(buffer);
-        var that = this;
 
         // generic functions
         function bitsToNum(ba) {
@@ -180,8 +181,7 @@ GifParser.prototype = {
             return ct;
         }
 
-        function parseHeader() {
-            var hdr = {};
+        function parseHeader(hdr) {
             hdr.sig = st.readString(3);
             hdr.ver = st.readString(3);
 
@@ -208,7 +208,6 @@ GifParser.prototype = {
             if (hdr.gctFlag) {
                 hdr.gct = parseCT(1 << (hdr.gctSize + 1));
             }
-            that.handleHeader && that.handleHeader(hdr);
         }
 
         function parseExt(block) {
@@ -224,13 +223,10 @@ GifParser.prototype = {
                 block.transparencyIndex = st.readUint8();
 
                 st.readUint8(); // block terminator
-
-                that.handleGCExt && that.handleGCExt(block);
             }
 
             function parseComExt(block) {
                 block.comment = st.readBlock().toString();
-                that.handleComExt && that.handleComExt(block);
             }
 
             function parsePTExt(block) {
@@ -245,8 +241,6 @@ GifParser.prototype = {
                 block.fgColor = st.readUint8();
                 block.bgColor = st.readUint8();
                 block.plainText = st.readBlock().toString();
-
-                that.handlePTExt && that.handlePTExt(block);
             }
 
             function parseAppExt(block) {
@@ -267,14 +261,10 @@ GifParser.prototype = {
                     }
 
                     st.readUint8(); // block terminator
-
-                    that.handleAppExt && that.handleAppExt.NETSCAPE && that.handleAppExt.NETSCAPE(block);
                 }
 
                 function parseUnknownAppExt(block) {
                     block.appData = st.readBlock().toArray();
-                    // FIXME: This won't work if a handler wants to match on any identifier.
-                    that.handleAppExt && that.handleAppExt[block.identifier] && that.handleAppExt[block.identifier](block);
                 }
 
                 readBlockSize(11);
@@ -288,12 +278,11 @@ GifParser.prototype = {
                     default:
                         parseUnknownAppExt(block);
                         break;
-                }
+                } 
             }
 
             function parseUnknownExt(block) {
                 block.data = st.readBlock().toArray();
-                that.handleUnknownExt && that.handleUnknownExt(block);
             }
 
             block.label = st.readUint8();
@@ -372,37 +361,36 @@ GifParser.prototype = {
             if (img.interlaced) { // Move
                 img.pixels = deinterlace(img.pixels, img.width);
             }
-
-            that.handleImg && that.handleImg(img);
         }
 
-        function parseBlocks() {
-            parseHeader();
+        var hdr = {};
+        hdr.type = 'hdr';
+        parseHeader(hdr);
+        this.handleBlock(hdr);
 
-            do {
-                var block = {};
-                block.sentinel = st.readUint8();
+        do {
+            var block = {};
+            block.sentinel = st.readUint8();
 
-                switch (String.fromCharCode(block.sentinel)) { // For ease of matching
-                    case '!':
-                        block.type = 'ext';
-                        parseExt(block);
-                        break;
-                    case ',':
-                        block.type = 'img';
-                        parseImg(block);
-                        break;
-                    case ';':
-                        block.type = 'eof';
-                        that.handleEOF && that.handleEOF(block);
-                        break;
-                    default:
-                        throw new GifError('Unknown block: 0x' + block.sentinel.toString(16)); // TODO: Pad this with a 0.
-                }
-            } while (block.type !== 'eof');
-        }
-
-        parseBlocks();
+            switch (String.fromCharCode(block.sentinel)) { // For ease of matching
+                case '!':
+                    block.type = 'ext';
+                    parseExt(block);
+                    this.handleBlock(block);
+                    break;
+                case ',':
+                    block.type = 'img';
+                    parseImg(block);
+                    this.handleBlock(block);
+                    break;
+                case ';':
+                    block.type = 'eof';
+                    this.handleBlock(block);
+                    break;
+                default:
+                    throw new GifError('Unknown block: 0x' + block.sentinel.toString(16)); // TODO: Pad this with a 0.
+            }
+        } while (block.type !== 'eof');
     }
 };
 
