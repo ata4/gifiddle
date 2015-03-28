@@ -109,8 +109,9 @@ function GifLab() {
             hostname = hostname.split('.').slice(-2).join('.');
             
             // many sites don't provide a wildcard ACAO header, so use a CORS proxy
+            var requestUrl = url;
             if (!corsHosts[hostname]) {
-                url = 'https://cors-anywhere.herokuapp.com/' + url;
+                requestUrl = 'https://cors-anywhere.herokuapp.com/' + url;
             }
             
             var filenameIndex = parser.pathname.lastIndexOf('/');
@@ -121,9 +122,7 @@ function GifLab() {
             } else {
                 document.title = title;
             }
-            
-            window.location.hash = '';
-            
+
             // Note: jQuery's .ajax() doesn't support binary files well, therefore
             // a direct XHR level 2 object is used instead
             var xhr = new XMLHttpRequest();
@@ -150,7 +149,7 @@ function GifLab() {
                 this.loader.showError('Unable to download GIF: Connection failed');
             }.bind(this);
             
-            xhr.open('GET', url, true);
+            xhr.open('GET', requestUrl, true);
             xhr.responseType = 'arraybuffer';
             xhr.send();
         }
@@ -196,6 +195,7 @@ function GifLabMenu(gifLab) {
         
         domForm.validator().on('submit', function(event) {
             if (!event.isDefaultPrevented()) {
+                event.preventDefault();
                 gifLab.loadUrl(domInput.val());
                 domModal.modal('hide');
             }
