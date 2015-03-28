@@ -68,7 +68,7 @@ function GifLab() {
     return {
         events: new Events(),
         loader: new GifLabLoader(),
-        loadGif: function(gifFile) {
+        loadBuffer: function(buffer) {
             if (player) {
                 player.stop();
                 player.clear();
@@ -81,23 +81,7 @@ function GifLab() {
                 this.loader.showCanvas();
             }.bind(this));
 
-            player.load(gifFile);
-        },
-        loadBuffer: function(buffer) {
-            try {
-                var gifFile = new GifFile();
-                gifFile.load(buffer, function () {
-                    this.loadGif(gifFile);
-                }.bind(this));
-            } catch (ex) {
-                if (ex instanceof GifError) {
-                    this.loader.showError('GIF error: ' + ex.message);
-                    console.error(ex);
-                } else {
-                    // not our business
-                    throw ex;
-                }
-            }
+            player.load(buffer);
         },
         loadBlob: function(blob) {
             this.loader.showLoad();

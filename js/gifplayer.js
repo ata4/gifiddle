@@ -47,16 +47,18 @@ function GifPlayer(canvas) {
         
     var instance = {
         events: new Events(),
-        load: function(gifFile) {
-            gif = gifFile;
-            canvas.width = gif.hdr.width;
-            canvas.height = gif.hdr.height;
-            
-            this.clear();
-            this.setFirst();
-            
-            ready = true;
-            this.events.emit('ready', gif);
+        load: function(buffer) {
+            gif = new GifFile();
+            gif.load(buffer, function() {
+                canvas.width = gif.hdr.width;
+                canvas.height = gif.hdr.height;
+
+                this.clear();
+                this.setFirst();
+
+                ready = true;
+                this.events.emit('ready', gif);
+            }.bind(this));
         },
         play: function() {
             // don't try to animate static GIFs
@@ -342,4 +344,215 @@ function GifPlayer(canvas) {
     };
     
     return instance;
+};
+
+function GifFile() {
+    this.hdr = null;
+    this.loopCount = -1;
+    this.comments = [];
+    this.frames = [];
+};
+
+GifFile.prototype.load = function(buffer, callback) {
+    
+    var gce;
+    var that = this;
+    var parser = new GifParser();
+
+    parser.handleHeader = function(block) {
+        that.hdr = block;
+    };
+    parser.handleGCExt = function(block) {
+        gce = block;
+    };
+    parser.handleComExt = function(block) {
+        // convert line breaks
+        var comment = block.comment.replace(/\r\n?/g, '\n');
+        that.comments.push(comment);
+    };
+    parser.handlePTExt = function(block) {
+        that.frames.push(new GifFrame(that.hdr, null, block, gce));
+        gce = null;
+    };
+    parser.handleImg = function(block) {
+        that.frames.push(new GifFrame(that.hdr, block, null, gce));
+        gce = null;
+    };
+    parser.handleAppExt = {
+        NETSCAPE: function(block) {
+            if (block.subBlockID === 1) {
+                that.loopCount = block.loopCount;
+            }
+        }
+    };
+    parser.handleEOF = function(block) {
+        callback && callback();
+    };
+    
+    parser.parse(buffer);
+};
+
+function GifFrame(hdr, img, pte, gce) {
+    if (!img && !pte) {
+        throw new GifError('No graphics data');
+    }
+    
+    this.img = img;
+    this.pte = pte;
+    this.gce = gce;
+    this.canvas = null;
+    this.prevImageData = null;
+    
+    var block = this.img ? this.img : this.pte;
+    this.width = block.width;
+    this.height = block.height;
+    this.top = block.topPos;
+    this.left = block.leftPos;
+    
+    this.canvas = document.createElement('canvas');
+    this.canvas.width = this.width;
+    this.canvas.height = this.height;
+
+    var ctx = this.canvas.getContext('2d');
+
+    var trans = -1;
+
+    if (this.gce && this.gce.transparencyFlag) {
+        trans = this.gce.transparencyIndex;
+    }
+
+    if (this.img) {
+        var imageData = ctx.getImageData(0, 0, this.width, this.height);
+        var numPixels = this.img.pixels.length;
+        var colorTable;
+
+        if (this.img && this.img.lctFlag) {
+            colorTable = this.img.lct;
+        } else if (hdr.gctFlag) {
+            colorTable = hdr.gct;
+        } else {
+            throw new GifError('No color table defined');
+        }
+
+        for (var i = 0; i < numPixels; i++) {
+            // don't override transparent pixels
+            if (this.img.pixels[i] === trans) {
+                continue;
+            }
+
+            // imageData.data = [R,G,B,A,...]
+            var color = colorTable[this.img.pixels[i]];
+            imageData.data[i * 4 + 0] = color[0];
+            imageData.data[i * 4 + 1] = color[1];
+            imageData.data[i * 4 + 2] = color[2];
+            imageData.data[i * 4 + 3] = 255;
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+        
+        // Free pixel data buffer that is no longer used. Keep its size for
+        // stats, though.
+        img.pixelsSize = img.pixels.length;
+        img.pixels = null;
+    } else {
+        // Plain text always uses the global color table, no matter what's
+        // set in the GCE. This also means we can't continue without.
+        var colorTable = hdr.gct;
+        if (!colorTable) {
+            throw new GifError('No color table defined');
+        }
+
+        // render background
+        if (this.pte.bgColor !== trans) {
+            var bgColor = colorTable[this.pte.bgColor];
+
+            ctx.fillStyle = 'rgb(' + bgColor.join() + ')';
+            ctx.fillRect(0, 0, this.width, this.height);
+        }
+
+        // render text
+        if (this.pte.fgColor !== trans) {
+            var fgColor = colorTable[this.pte.fgColor];
+            var cellWidth = this.pte.charCellWidth;
+            var cellHeight = this.pte.charCellHeight;
+
+            // "The selection of font and size is left to the discretion of
+            // the decoder." Well, who needs consistency, anyway?
+            var fontSize = (cellHeight * 0.8).toFixed(2) + 'pt';
+            ctx.font = fontSize + ' "Lucida Console", Monaco, monospace';
+
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = 'rgb(' + fgColor.join() + ')';
+
+            // text positions, the current values and their limits, rounded
+            // down to cell size
+            var textTop = 0;
+            var textTopMax = (Math.floor(this.height / cellHeight) * cellHeight);
+            var textTopOffset = (cellHeight / 2);
+            var textLeft = 0;
+            var textLeftMax = (Math.floor(this.width / cellWidth) * cellWidth);
+            var text = this.pte.plainText;
+
+            for (var i = 0; i < text.length; i++) {
+                var char = text.charCodeAt(i);
+
+                // see 25e
+                if (char < 0x20 || char > 0x7f) {
+                    char = 0x20;
+                }
+
+                // for debugging
+                //ctx.strokeRect(textLeft, textTop, cellWidth, cellHeight);
+
+                // draw character
+                ctx.fillText(String.fromCharCode(char), textLeft,
+                    textTop + textTopOffset, cellWidth);
+
+                // move to the right by one char
+                textLeft += cellWidth;
+
+                // continue at next line when the grid was hit
+                if (textLeft >= textLeftMax) {
+                    textLeft = 0;
+                    textTop += cellHeight;
+
+                    // cancel if the next line is outside the grid
+                    if (textTop >= textTopMax) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+};
+
+GifFrame.prototype = {
+    blit: function(ctx) {
+        // keep a copy of the original rectangle for later disposal
+        if (this.gce && this.gce.disposalMethod === 3) {
+            this.prevImageData = ctx.getImageData(this.left, this.top,
+                this.width, this.height);
+        }
+        
+        ctx.drawImage(this.canvas, this.left, this.top);
+    },
+    repair: function(ctx) {
+        if (!this.gce) {
+            return;
+        }
+        
+        switch (this.gce.disposalMethod) {
+            // restore background
+            case 2:
+                ctx.clearRect(this.left, this.top, this.width, this.height);
+                break;
+                
+            // restore previous
+            case 3:
+                if (this.prevImageData) {
+                    ctx.putImageData(this.prevImageData, this.left, this.top);
+                }
+                break;
+        }       
+    }
 };
