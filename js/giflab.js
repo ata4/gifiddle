@@ -108,7 +108,10 @@ function GifLab() {
             // strip subdomain
             hostname = hostname.split('.').slice(-2).join('.');
             
-            // many sites don't provide a wildcard ACAO header, so use a CORS proxy
+            // Use a CORS proxy unless the host is known to send a wildcard
+            // ACAO header. Cross-domain errors can't be caught with exception
+            // handling due to the intentional filtering, so avoid trial-and-error
+            // requests here.
             var requestUrl = url;
             if (!corsHosts[hostname]) {
                 requestUrl = 'https://cors-anywhere.herokuapp.com/' + url;
