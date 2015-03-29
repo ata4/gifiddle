@@ -363,7 +363,7 @@ GifFile.prototype.load = function(buffer, callback) {
                 break;
                 
             case 'img':
-                this.frames.push(new GifFrame(this.hdr, block, null, gce));
+                this.frames.push(new GifImageFrame(this.hdr, gce, block));
                 gce = null;
                 break;
                 
@@ -380,7 +380,7 @@ GifFile.prototype.load = function(buffer, callback) {
                         break;
 
                     case 'pte':
-                        this.frames.push(new GifFrame(this.hdr, null, block, gce));
+                        this.frames.push(new GifTextFrame(this.hdr, gce, block));
                         gce = null;
                         break;
                         
@@ -414,18 +414,11 @@ GifFile.prototype.load = function(buffer, callback) {
     }
 };
 
-function GifFrame(hdr, img, pte, gce) {
-    if (!img && !pte) {
-        throw new GifError('No graphics data');
-    }
-    
-    this.img = img;
-    this.pte = pte;
+function GifFrame(gce, block) {
     this.gce = gce;
     this.canvas = null;
     this.prevImageData = null;
     
-    var block = this.img ? this.img : this.pte;
     this.width = block.width;
     this.height = block.height;
     this.top = block.topPos;
@@ -434,117 +427,13 @@ function GifFrame(hdr, img, pte, gce) {
     this.canvas = document.createElement('canvas');
     this.canvas.width = this.width;
     this.canvas.height = this.height;
+    
+    this.ctx = this.canvas.getContext('2d');
 
-    var ctx = this.canvas.getContext('2d');
-
-    var trans = -1;
+    this.trans = -1;
 
     if (this.gce && this.gce.transparencyFlag) {
-        trans = this.gce.transparencyIndex;
-    }
-
-    if (this.img) {
-        var imageData = ctx.getImageData(0, 0, this.width, this.height);
-        var numPixels = this.img.pixels.length;
-        var colorTable;
-
-        if (this.img && this.img.lctFlag) {
-            colorTable = this.img.lct;
-        } else if (hdr.gctFlag) {
-            colorTable = hdr.gct;
-        } else {
-            throw new GifError('No color table defined');
-        }
-
-        for (var i = 0; i < numPixels; i++) {
-            // don't override transparent pixels
-            if (this.img.pixels[i] === trans) {
-                continue;
-            }
-
-            // imageData.data = [R,G,B,A,...]
-            var color = colorTable[this.img.pixels[i]];
-            imageData.data[i * 4 + 0] = color[0];
-            imageData.data[i * 4 + 1] = color[1];
-            imageData.data[i * 4 + 2] = color[2];
-            imageData.data[i * 4 + 3] = 255;
-        }
-
-        ctx.putImageData(imageData, 0, 0);
-        
-        // Free pixel data buffer that is no longer used. Keep its size for
-        // stats, though.
-        img.pixelsSize = img.pixels.length;
-        img.pixels = null;
-    } else {
-        // Plain text always uses the global color table, no matter what's
-        // set in the GCE. This also means we can't continue without.
-        var colorTable = hdr.gct;
-        if (!colorTable) {
-            throw new GifError('No color table defined');
-        }
-
-        // render background
-        if (this.pte.bgColor !== trans) {
-            var bgColor = colorTable[this.pte.bgColor];
-
-            ctx.fillStyle = 'rgb(' + bgColor.join() + ')';
-            ctx.fillRect(0, 0, this.width, this.height);
-        }
-
-        // render text
-        if (this.pte.fgColor !== trans) {
-            var fgColor = colorTable[this.pte.fgColor];
-            var cellWidth = this.pte.charCellWidth;
-            var cellHeight = this.pte.charCellHeight;
-
-            // "The selection of font and size is left to the discretion of
-            // the decoder." Well, who needs consistency, anyway?
-            var fontSize = (cellHeight * 0.8).toFixed(2) + 'pt';
-            ctx.font = fontSize + ' "Lucida Console", Monaco, monospace';
-
-            ctx.textBaseline = 'middle';
-            ctx.fillStyle = 'rgb(' + fgColor.join() + ')';
-
-            // text positions, the current values and their limits, rounded
-            // down to cell size
-            var textTop = 0;
-            var textTopMax = (Math.floor(this.height / cellHeight) * cellHeight);
-            var textTopOffset = (cellHeight / 2);
-            var textLeft = 0;
-            var textLeftMax = (Math.floor(this.width / cellWidth) * cellWidth);
-            var text = this.pte.plainText;
-
-            for (var i = 0; i < text.length; i++) {
-                var char = text.charCodeAt(i);
-
-                // see 25e
-                if (char < 0x20 || char > 0x7f) {
-                    char = 0x20;
-                }
-
-                // for debugging
-                //ctx.strokeRect(textLeft, textTop, cellWidth, cellHeight);
-
-                // draw character
-                ctx.fillText(String.fromCharCode(char), textLeft,
-                    textTop + textTopOffset, cellWidth);
-
-                // move to the right by one char
-                textLeft += cellWidth;
-
-                // continue at next line when the grid was hit
-                if (textLeft >= textLeftMax) {
-                    textLeft = 0;
-                    textTop += cellHeight;
-
-                    // cancel if the next line is outside the grid
-                    if (textTop >= textTopMax) {
-                        break;
-                    }
-                }
-            }
-        }
+        this.trans = this.gce.transparencyIndex;
     }
 };
 
@@ -578,3 +467,121 @@ GifFrame.prototype = {
         }       
     }
 };
+
+function GifImageFrame(hdr, gce, img) {
+    GifFrame.call(this, gce, img);
+    
+    this.img = img;
+    
+    var imageData = this.ctx.getImageData(0, 0, this.width, this.height);
+    var numPixels = this.img.pixels.length;
+    var colorTable;
+
+    if (this.img && this.img.lctFlag) {
+        colorTable = this.img.lct;
+    } else if (hdr.gctFlag) {
+        colorTable = hdr.gct;
+    } else {
+        throw new GifError('No color table defined');
+    }
+
+    for (var i = 0; i < numPixels; i++) {
+        // imageData.data = [R,G,B,A,...]
+        var color = colorTable[this.img.pixels[i]];
+        imageData.data[i * 4 + 0] = color[0];
+        imageData.data[i * 4 + 1] = color[1];
+        imageData.data[i * 4 + 2] = color[2];
+        
+        if (this.img.pixels[i] === this.trans) {
+            imageData.data[i * 4 + 3] = 0;
+        } else {
+            imageData.data[i * 4 + 3] = 255;
+        }
+    }
+
+    this.ctx.putImageData(imageData, 0, 0);
+
+    // Free pixel data buffer that is no longer used. Keep its size for
+    // stats, though.
+    this.img.pixelsSize = img.pixels.length;
+    this.img.pixels = null;
+}
+
+GifImageFrame.prototype = Object.create(GifFrame.prototype);
+
+function GifTextFrame(hdr, gce, pte) {
+    GifFrame.call(this, gce, pte);
+    
+    this.pte = pte;
+    
+    // Plain text always uses the global color table, no matter what's
+    // set in the GCE. This also means we can't continue without.
+    var colorTable = hdr.gct;
+    if (!colorTable) {
+        throw new GifError('No color table defined');
+    }
+
+    // render background
+    if (this.pte.bgColor !== this.trans) {
+        var bgColor = colorTable[this.pte.bgColor];
+
+        this.ctx.fillStyle = 'rgb(' + bgColor.join() + ')';
+        this.ctx.fillRect(0, 0, this.width, this.height);
+    }
+
+    // render text
+    if (this.pte.fgColor !== this.trans) {
+        var fgColor = colorTable[this.pte.fgColor];
+        var cellWidth = this.pte.charCellWidth;
+        var cellHeight = this.pte.charCellHeight;
+
+        // "The selection of font and size is left to the discretion of
+        // the decoder." Well, who needs consistency, anyway?
+        var fontSize = (cellHeight * 0.8).toFixed(2) + 'pt';
+        this.ctx.font = fontSize + ' "Lucida Console", Monaco, monospace';
+
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillStyle = 'rgb(' + fgColor.join() + ')';
+
+        // text positions, the current values and their limits, rounded
+        // down to cell size
+        var textTop = 0;
+        var textTopMax = (Math.floor(this.height / cellHeight) * cellHeight);
+        var textTopOffset = (cellHeight / 2);
+        var textLeft = 0;
+        var textLeftMax = (Math.floor(this.width / cellWidth) * cellWidth);
+        var text = this.pte.plainText;
+
+        for (var i = 0; i < text.length; i++) {
+            var char = text.charCodeAt(i);
+
+            // see 25e
+            if (char < 0x20 || char > 0x7f) {
+                char = 0x20;
+            }
+
+            // for debugging
+            //this.ctx.strokeRect(textLeft, textTop, cellWidth, cellHeight);
+
+            // draw character
+            this.ctx.fillText(String.fromCharCode(char), textLeft,
+                textTop + textTopOffset, cellWidth);
+
+            // move to the right by one char
+            textLeft += cellWidth;
+
+            // continue at next line when the grid was hit
+            if (textLeft >= textLeftMax) {
+                textLeft = 0;
+                textTop += cellHeight;
+
+                // cancel if the next line is outside the grid
+                if (textTop >= textTopMax) {
+                    break;
+                }
+            }
+        }
+    }
+}
+
+GifTextFrame.prototype = Object.create(GifFrame.prototype);
