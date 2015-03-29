@@ -14,7 +14,7 @@ function GifPlayer(canvas) {
     var userInput = false;
     
     var renderRaw = false;
-    var renderBGColor = false;
+    var renderBackground = false;
     
     function render(frameIndex) {
         var frame = instance.getFrame(frameIndex);
@@ -32,7 +32,7 @@ function GifPlayer(canvas) {
             instance.clear();
             
             // draw background color if enabled
-            if (renderBGColor && gif.hdr.gctFlag) {
+            if (renderBackground && gif.hdr.gctFlag) {
                 var bgColor = gif.hdr.gct[gif.hdr.bgColor];
                 canvas2d.fillStyle = 'rgb(' + bgColor.join() + ')';
                 canvas2d.fillRect(0, 0, canvas.width, canvas.height);
@@ -44,6 +44,13 @@ function GifPlayer(canvas) {
 
         framePrev = frame;
     }
+    
+    function setReady() {
+        ready = true;
+        instance.clear();
+        instance.setFirst();
+        instance.events.emit('ready', gif);
+    }
         
     var instance = {
         events: new Events(),
@@ -53,11 +60,7 @@ function GifPlayer(canvas) {
                 canvas.width = gif.hdr.width;
                 canvas.height = gif.hdr.height;
 
-                this.clear();
-                this.setFirst();
-
-                ready = true;
-                this.events.emit('ready', gif);
+                setReady();
             }.bind(this));
         },
         play: function() {
@@ -340,6 +343,14 @@ function GifPlayer(canvas) {
         clear: function() {
             canvas2d.clearRect(0, 0, canvas.width, canvas.height);            
             framePrev = null;
+        },
+        destroy: function() {
+            if (!ready) {
+                gif.cancel();
+            }
+            
+            this.stop();
+            this.clear();
         }
     };
     
@@ -351,66 +362,73 @@ function GifFile() {
     this.loopCount = -1;
     this.comments = [];
     this.frames = [];
+    this.worker = undefined;
 };
 
-GifFile.prototype.load = function(buffer, callback) {
-    
-    var gce;
-    var handleBlock = function(block) {
-        switch (block.type) {
-            case 'hdr':
-                this.hdr = block;
-                break;
-                
-            case 'img':
-                this.frames.push(new GifImageFrame(this.hdr, gce, block));
-                gce = null;
-                break;
-                
-            case 'ext':
-                switch (block.extType) {
-                    case 'gce':
-                        gce = block;
-                        break;
+GifFile.prototype = {
+    load: function(buffer, callback) {
+        var gce;
+        var handleBlock = function(block) {
+            switch (block.type) {
+                case 'hdr':
+                    this.hdr = block;
+                    break;
 
-                    case 'com':
-                        // convert line breaks
-                        var comment = block.comment.replace(/\r\n?/g, '\n');
-                        this.comments.push(comment);
-                        break;
+                case 'img':
+                    this.frames.push(new GifImageFrame(this.hdr, gce, block));
+                    gce = null;
+                    break;
 
-                    case 'pte':
-                        this.frames.push(new GifTextFrame(this.hdr, gce, block));
-                        gce = null;
-                        break;
-                        
-                    case 'app':
-                        if (block.identifier === 'NETSCAPE' && block.subBlockID === 1) {
-                            this.loopCount = block.loopCount;
-                        }
-                        break;
-                }
-                break;
-                
-            case 'eof':
-                callback && callback();
-                break;
+                case 'ext':
+                    switch (block.extType) {
+                        case 'gce':
+                            gce = block;
+                            break;
+
+                        case 'com':
+                            // convert line breaks
+                            var comment = block.comment.replace(/\r\n?/g, '\n');
+                            this.comments.push(comment);
+                            break;
+
+                        case 'pte':
+                            this.frames.push(new GifTextFrame(this.hdr, gce, block));
+                            gce = null;
+                            break;
+
+                        case 'app':
+                            if (block.identifier === 'NETSCAPE' && block.subBlockID === 1) {
+                                this.loopCount = block.loopCount;
+                            }
+                            break;
+                    }
+                    break;
+
+                case 'eof':
+                    callback && callback();
+                    break;
+            }
+        }.bind(this);
+
+        // load GIF in a worker if possible
+        if (!!window.Worker) {
+            this.worker = new Worker('js/gifworker.js');
+            this.worker.addEventListener('message', function(evt) {
+                handleBlock(evt.data);
+            }, false);
+            this.worker.postMessage(buffer);
+        } else {
+            var gif = new Gif();
+            gif.handleBlock = handleBlock;
+            gif.parse(buffer);
         }
-    }.bind(this);
-    
-    // load GIF in a worker if possible
-    if (!!window.Worker) {
-        var gifWorker = new Worker('js/gifworker.js');
-        
-        gifWorker.onmessage = function(evt) {
-            handleBlock(evt.data);
-        };
-        
-        gifWorker.postMessage(buffer);
-    } else {
-        var gif = new Gif();
-        gif.handleBlock = handleBlock;
-        gif.parse(buffer);
+    },
+    cancel: function() {
+        // terminate worker if running
+        if (this.worker) {
+            this.worker.terminate();
+            this.worker = undefined;
+        }
     }
 };
 

@@ -70,8 +70,7 @@ function GifLab() {
         loader: new GifLabLoader(),
         loadBuffer: function(buffer) {
             if (player) {
-                player.stop();
-                player.clear();
+                player.destroy();
                 player = null;
             }
 

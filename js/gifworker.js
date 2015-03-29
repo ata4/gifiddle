@@ -8,6 +8,9 @@ onmessage = function(evt) {
 
     gif.handleBlock = function(block) {
         postMessage(block);
+        if (block.type === 'eof') {
+            close();
+        }
     };
     gif.parse(buffer);
 };
