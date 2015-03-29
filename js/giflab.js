@@ -87,6 +87,7 @@ function GifLab() {
             this.loader.showLoad();
             
             document.title = title + ': ' + blob.name;
+            window.location.hash = '';
 
             var reader = new FileReader();
             reader.addEventListener('load', function(event) {
