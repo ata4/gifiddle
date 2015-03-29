@@ -24,7 +24,12 @@
 }
 
 .dropdown-options {
-    width: 14em;
+    width: 16em;
+}
+
+.dropdown-options .checkbox {
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
 
 .comment-box {

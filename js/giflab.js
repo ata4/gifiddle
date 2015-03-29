@@ -208,6 +208,7 @@ function GifLabMenu(gifLab) {
     // options
     (function() {
         var domCheckboxRenderRaw = domToolbarMenu.find('#checkbox-render-raw');
+        var domCheckboxRenderBG = domToolbarMenu.find('#checkbox-render-bg');
 
         gifLab.events.on('initPlayer', function(gifPlayer) {
             domCheckboxRenderRaw.off();
@@ -217,8 +218,16 @@ function GifLabMenu(gifLab) {
                 }
             });
             
+            domCheckboxRenderBG.off();
+            domCheckboxRenderBG.on('change', function(event) {
+                if (gifPlayer.isReady()) {
+                    gifPlayer.setRenderBackground(event.target.checked);
+                }
+            });
+            
             gifPlayer.events.on('ready', function() {
                 gifPlayer.setRenderRaw(domCheckboxRenderRaw.prop('checked'));
+                gifPlayer.setRenderBackground(domCheckboxRenderBG.prop('checked'));
             });
         });
     })();

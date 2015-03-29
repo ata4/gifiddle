@@ -5,6 +5,18 @@ function GifPlayer(canvas) {
     var gif = null;
     var ctx = canvas.getContext('2d');
     
+    var frameIndexCurr = 0;
+    var frameIndexPrev = 1;
+    var framePrev = null;
+    var loopCount = 0;
+    var timeout = null;
+    var playing = false;
+    var ready = false;
+    var userInput = false;
+    
+    var renderRaw = false;
+    var renderBackground = false;
+    
     // override clearRect so it can also render the background color when enabled
     ctx.clearRect = function(top, left, width, height) {
         // I'd like a super.clearRect(), but JavaScript disagrees...
@@ -18,18 +30,6 @@ function GifPlayer(canvas) {
             this.restore();
         }
     };
-    
-    var frameIndexCurr = 0;
-    var frameIndexPrev = 1;
-    var framePrev = null;
-    var loopCount = 0;
-    var timeout = null;
-    var playing = false;
-    var ready = false;
-    var userInput = false;
-    
-    var renderRaw = false;
-    var renderBackground = true;
     
     function render(frameIndex) {
         var frame = instance.getFrame(frameIndex);
@@ -307,12 +307,22 @@ function GifPlayer(canvas) {
             
             renderRaw = _renderRaw;
             
-            var frameIndex = frameIndexCurr;
-            this.setFrameIndex(0);
-            this.setFrameIndex(frameIndex);
+            this.refresh();
         },
         isRenderRaw: function() {
             return renderRaw;
+        },
+        setRenderBackground: function(_renderBackground) {
+            if (renderBackground === _renderBackground) {
+                return;
+            }
+            
+            renderBackground = _renderBackground;
+            
+            this.refresh();
+        },
+        isRenderBackground: function() {
+            return renderBackground;
         },
         update: function() {
             // don't update if the indices are unchanged
@@ -347,6 +357,16 @@ function GifPlayer(canvas) {
             }
 
             frameIndexPrev = frameIndexCurr;
+        },
+        refresh: function() {
+            var frameIndex = frameIndexCurr;
+            if (frameIndex === 0) {
+                this.setNext();
+                this.setPrevious();
+            } else {
+                this.setFrameIndex(0);
+                this.setFrameIndex(frameIndex);
+            }
         },
         clear: function() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);            
