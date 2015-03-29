@@ -56,7 +56,8 @@ function GifLab() {
     // set of hosts that have a wildcard ACAO header
     var corsHosts = {
         'imgur.com': true,
-        'tumblr.com': true
+        'tumblr.com': true,
+        'googleusercontent.com': true
     };
 
     var domViewport = $('#viewport');
