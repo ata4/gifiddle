@@ -3,7 +3,22 @@
 function GifPlayer(canvas) {
     
     var gif = null;
-    var canvas2d = canvas.getContext('2d');
+    var ctx = canvas.getContext('2d');
+    
+    // override clearRect so it can also render the background color when enabled
+    ctx.clearRect = function(top, left, width, height) {
+        // I'd like a super.clearRect(), but JavaScript disagrees...
+        Object.getPrototypeOf(this).clearRect.call(this, top, left, width, height);
+
+        var hdr = gif.hdr;
+        if (!renderRaw && renderBackground && hdr.gctFlag) {
+            this.save();
+            this.fillStyle = 'rgb(' + hdr.gct[hdr.bgColor].join() + ')';
+            this.fillRect(top, left, width, height);
+            this.restore();
+        }
+    };
+    
     var frameIndexCurr = 0;
     var frameIndexPrev = 1;
     var framePrev = null;
@@ -14,7 +29,7 @@ function GifPlayer(canvas) {
     var userInput = false;
     
     var renderRaw = false;
-    var renderBackground = false;
+    var renderBackground = true;
     
     function render(frameIndex) {
         var frame = instance.getFrame(frameIndex);
@@ -24,23 +39,16 @@ function GifPlayer(canvas) {
 
         // restore previous area
         if (!renderRaw && framePrev) {
-            framePrev.repair(canvas2d);
+            framePrev.repair(ctx);
         }
         
         // clear canvas before rendering the background
         if (frameIndex === 0) {
             instance.clear();
-            
-            // draw background color if enabled
-            if (renderBackground && gif.hdr.gctFlag) {
-                var bgColor = gif.hdr.gct[gif.hdr.bgColor];
-                canvas2d.fillStyle = 'rgb(' + bgColor.join() + ')';
-                canvas2d.fillRect(0, 0, canvas.width, canvas.height);
-            }
         }
         
         // render new frame
-        frame.blit(canvas2d);
+        frame.blit(ctx);
 
         framePrev = frame;
     }
@@ -341,7 +349,7 @@ function GifPlayer(canvas) {
             frameIndexPrev = frameIndexCurr;
         },
         clear: function() {
-            canvas2d.clearRect(0, 0, canvas.width, canvas.height);            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);            
             framePrev = null;
         },
         destroy: function() {
@@ -432,7 +440,8 @@ GifFile.prototype = {
     }
 };
 
-function GifFrame(gce, block) {
+function GifFrame(hdr, gce, block) {
+    this.hdr = hdr;
     this.gce = gce;
     this.canvas = null;
     this.prevImageData = null;
@@ -487,7 +496,7 @@ GifFrame.prototype = {
 };
 
 function GifImageFrame(hdr, gce, img) {
-    GifFrame.call(this, gce, img);
+    GifFrame.call(this, hdr, gce, img);
     
     this.img = img;
     
@@ -497,8 +506,8 @@ function GifImageFrame(hdr, gce, img) {
 
     if (this.img && this.img.lctFlag) {
         colorTable = this.img.lct;
-    } else if (hdr.gctFlag) {
-        colorTable = hdr.gct;
+    } else if (this.hdr.gctFlag) {
+        colorTable = this.hdr.gct;
     } else {
         throw new GifError('No color table defined');
     }
@@ -528,13 +537,13 @@ function GifImageFrame(hdr, gce, img) {
 GifImageFrame.prototype = Object.create(GifFrame.prototype);
 
 function GifTextFrame(hdr, gce, pte) {
-    GifFrame.call(this, gce, pte);
+    GifFrame.call(this, hdr, gce, pte);
     
     this.pte = pte;
     
     // Plain text always uses the global color table, no matter what's
     // set in the GCE. This also means we can't continue without.
-    var colorTable = hdr.gct;
+    var colorTable = this.hdr.gct;
     if (!colorTable) {
         throw new GifError('No color table defined');
     }
