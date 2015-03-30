@@ -2,12 +2,12 @@ $(function() {
     var gifLab = new GifLab();
     
     // init modules
-    new GifLabMenu(gifLab);
-    new GifLabInfo(gifLab);
-    new GifLabControls(gifLab);
-    new GifLabUserInput(gifLab);
-    new GifLabDragAndDrop(gifLab);
-    new GifLabAutoplay(gifLab);
+    GifLabMenu(gifLab);
+    GifLabInfo(gifLab);
+    GifLabControls(gifLab);
+    GifLabUserInput(gifLab);
+    GifLabDragAndDrop(gifLab);
+    GifLabAutoplay(gifLab);
     
     // auto-load image in parameters
     var url = document.URL;
