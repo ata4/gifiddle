@@ -495,16 +495,19 @@ function GifLabInfo(gifLab) {
     var domGcePanel = domSidebar.find('#info-panel-gce');
     var domImgPanel = domSidebar.find('#info-panel-img');
     var domPtePanel = domSidebar.find('#info-panel-pte');
+    var domStatsPanel = domSidebar.find('#info-panel-stats');
     
     var hdrTable = new Table(domHdrPanel.find('table'));
     var gceTable = new Table(domGcePanel.find('table'));
     var imgTable = new Table(domImgPanel.find('table'));
     var pteTable = new Table(domPtePanel.find('table'));
+    var statsTable = new Table(domStatsPanel.find('table'));
     
     domHdrPanel.hide();
     domGcePanel.hide();
     domImgPanel.hide();
     domPtePanel.hide();
+    domStatsPanel.hide();
     
     var domCheckboxShowInfoRaw = $('#checkbox-show-info');
     
@@ -581,7 +584,11 @@ function GifLabInfo(gifLab) {
                 str += ' bpp)';
             }
             return str;
-        }  
+        },
+        compressRatio: function(csize, ucsize) {
+            var ratio = ucsize / csize;
+            return ratio.toFixed(2);
+        }
     };
     
     function buildColorTable(ct, ctFlag, sortFlag) {
@@ -636,6 +643,73 @@ function GifLabInfo(gifLab) {
         }
     }
     
+    function updateStats(gifFile) {
+        
+        domStatsPanel.show();
+        
+        statsTable.empty();
+        
+        var cSize = 0;
+        var ucSizeRel = 0;
+        var ucSizeAbs = 0;
+        var colors = 0;
+        var colorSet = new Set();
+        
+        function hashColor(color) {
+            var hash = 1;
+            hash = hash * 17 + color[0];
+            hash = hash * 31 + color[1];
+            hash = hash * 13 + color[2];
+            return hash;
+        }
+        
+        if (gifFile.hdr.gctFlag) {
+            colors += gifFile.hdr.gct.length;
+            gifFile.hdr.gct.forEach(function(color) {
+                colorSet.add(hashColor(color));
+            });
+        }
+
+        gifFile.frames.forEach(function(frame) {
+            var img = frame.img;
+            if (!img) {
+                return;
+            }
+            
+            cSize += img.lzwSize;
+            ucSizeRel += img.width * img.height;
+            ucSizeAbs += gifFile.hdr.width * gifFile.hdr.height;
+            
+            if (img.lctFlag) {
+                colors += img.lct.length;
+                img.lct.forEach(function(color) {
+                    colorSet.add(hashColor(color));
+                });
+            }
+        });
+        
+        statsTable.row('File size', formatter.byteSize(gifFile.byteLength));
+        statsTable.row('Absolute DCR', formatter.compressRatio(cSize, ucSizeRel)).attr('title',
+            'Combined data compression ratio of all frames.\n' +
+            'Typical GIFs have a ratio between 1 to 4 while\n' +
+            'simple graphics with few colors compress much better.'
+        );
+        statsTable.row('Virtual DCR', formatter.compressRatio(cSize, ucSizeAbs)).attr('title',
+            'Combined data compression ratio of all frames if they would\n' +
+            'fill up the entire GIF screen.\n' +
+            'High values (> 10) are typical for well-optimized GIFs,\n' +
+            'such as cinemagraphs.'
+        );
+        statsTable.row('Total colors', colors).attr('title',
+            'Total number of defined colors in the GIF.\n' +
+            'Includes colors from local and global color tables.'
+        );
+        statsTable.row('Unique colors', colorSet.size).attr('title',
+            'Total number of unique colors in the GIF.\n' + 
+            'Includes colors from local and global color tables.'
+        );
+    }
+    
     var framePrev;
     var frameIndexPrev;
     var domColorTables;
@@ -672,8 +746,8 @@ function GifLabInfo(gifLab) {
             imgTable.col(domColorTables[frameIndex]);
             
             imgTable.row('Compressed size', formatter.byteSize(img.lzwSize));
-            imgTable.row('Uncompressed size', formatter.byteSize(img.pixelsSize));
-            imgTable.row('Compression ratio', (img.pixelsSize / img.lzwSize).toFixed(2));
+            imgTable.row('Uncompressed size', formatter.byteSize(img.width * img.height));
+            imgTable.row('Compression ratio', formatter.compressRatio(img.lzwSize, img.width * img.height));
             imgTable.row('LZW min. code size', img.lzwMinCodeSize);
         } else {
             domImgPanel.hide();
@@ -717,6 +791,7 @@ function GifLabInfo(gifLab) {
         
         gifPlayer.events.on('ready', function(gifFile) {
             updateHeader(gifFile);
+            updateStats(gifFile);
         });
         
         gifPlayer.events.on('update', function() {

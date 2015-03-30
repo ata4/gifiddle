@@ -48,14 +48,14 @@
                 <ul class="nav navbar-nav">
                     <li class="dropdown">
                         <a id="drop1" class="dropdown-toggle" data-toggle="dropdown" role="button">
-                            <i class="fa fa-file-image-o"></i> Open <span class="caret"></span>
+                            <i class="fa fa-file-image-o"></i> File <span class="caret"></span>
                         </a>
                         <ul class="dropdown-menu" role="menu">
                             <li role="presentation">
-                                <a role="menuitem" tabindex="-1" class="file-link">Local file</a>
+                                <a role="menuitem" tabindex="-1" class="file-link">Open local file</a>
                             </li>
                             <li role="presentation">
-                                <a role="menuitem" tabindex="-1" data-toggle="modal" data-target="#modal-url">Remote file</a>
+                                <a role="menuitem" tabindex="-1" data-toggle="modal" data-target="#modal-url">Open remote file</a>
                             </li>
                         </ul>
                     </li>
@@ -151,6 +151,20 @@
         </div>
 
         <div class="panel-group" id="info-sidebar">
+            <div id="info-panel-stats" class="panel panel-default">
+                <div class="panel-heading">
+                    <a data-toggle="collapse" href="#info-stats">
+                        <h5 class="panel-title">
+                            <i class="fa fa-bar-chart"></i>
+                            Statistics
+                        </h5>
+                    </a>
+                </div>
+                <div id="info-stats" class="panel-collapse collapse in">
+                    <table class="table table-striped">
+                    </table>
+                </div>
+            </div>
             <div id="info-panel-hdr" class="panel panel-default">
                 <div class="panel-heading">
                     <a data-toggle="collapse" href="#info-hdr">

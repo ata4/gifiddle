@@ -64,6 +64,7 @@ function GifPlayer(canvas) {
         events: new Events(),
         load: function(buffer) {
             gif = new GifFile();
+            gif.byteLength = buffer.byteLength;
             gif.load(buffer, function() {
                 canvas.width = gif.hdr.width;
                 canvas.height = gif.hdr.height;
@@ -548,9 +549,7 @@ function GifImageFrame(hdr, gce, img) {
 
     this.ctx.putImageData(imageData, 0, 0);
 
-    // Free pixel data buffer that is no longer used. Keep its size for
-    // stats, though.
-    this.img.pixelsSize = img.pixels.length;
+    // free the now unused pixel data buffer
     this.img.pixels = null;
 }
 
