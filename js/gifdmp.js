@@ -1,13 +1,13 @@
 $(function() {
-    var gifLab = new GifLab();
+    var gifDmp = new GifDmp();
     
     // init modules
-    GifLabMenu(gifLab);
-    GifLabInfo(gifLab);
-    GifLabControls(gifLab);
-    GifLabUserInput(gifLab);
-    GifLabDragAndDrop(gifLab);
-    GifLabAutoplay(gifLab);
+    GifDmpMenu(gifDmp);
+    GifDmpInfo(gifDmp);
+    GifDmpControls(gifDmp);
+    GifDmpUserInput(gifDmp);
+    GifDmpDragAndDrop(gifDmp);
+    GifDmpAutoplay(gifDmp);
     
     // auto-load image in parameters
     var url = document.URL;
@@ -15,14 +15,14 @@ $(function() {
     if (urlFragIndex !== -1) {
         var gifUrl = url.substring(urlFragIndex + 1);
         if (gifUrl.length > 0) {
-            gifLab.loadUrl(gifUrl);
+            gifDmp.loadUrl(gifUrl);
         }
     }
 });
 
-function GifLab() {
+function GifDmp() {
     
-    function GifLabLoader() {
+    function GifDmpLoader() {
 
         var domViewport = $('#viewport');
         var domLoaderIcon = $('#loader-icon');
@@ -68,7 +68,7 @@ function GifLab() {
     
     return {
         events: new Events(),
-        loader: new GifLabLoader(),
+        loader: new GifDmpLoader(),
         loadBuffer: function(buffer) {
             if (player) {
                 player.destroy();
@@ -160,7 +160,7 @@ function GifLab() {
     };
 }
 
-function GifLabMenu(gifLab) {
+function GifDmpMenu(gifDmp) {
 
     // global elements
     var domToolbar = $('#toolbar');
@@ -183,7 +183,7 @@ function GifLabMenu(gifLab) {
                 return;
             }
 
-            gifLab.loadBlob(file);
+            gifDmp.loadBlob(file);
         });
 
         domFileLink.on('click', function(event) {
@@ -200,7 +200,7 @@ function GifLabMenu(gifLab) {
         domForm.validator().on('submit', function(event) {
             if (!event.isDefaultPrevented()) {
                 event.preventDefault();
-                gifLab.loadUrl(domInput.val());
+                gifDmp.loadUrl(domInput.val());
                 domModal.modal('hide');
             }
         });
@@ -211,7 +211,7 @@ function GifLabMenu(gifLab) {
         var domCheckboxRenderRaw = domToolbarMenu.find('#checkbox-render-raw');
         var domCheckboxRenderBG = domToolbarMenu.find('#checkbox-render-bg');
 
-        gifLab.events.on('initPlayer', function(gifPlayer) {
+        gifDmp.events.on('initPlayer', function(gifPlayer) {
             domCheckboxRenderRaw.off();
             domCheckboxRenderRaw.on('change', function(event) {
                 if (gifPlayer.isReady()) {
@@ -281,7 +281,7 @@ function GifLabMenu(gifLab) {
             }
         }
         
-        gifLab.events.on('initPlayer', function(gifPlayer) {
+        gifDmp.events.on('initPlayer', function(gifPlayer) {
             gifPlayer.events.on('ready', function(gifFile) {
                 commentArray = gifFile.comments;
                 commentIndex = 0;
@@ -303,7 +303,7 @@ function GifLabMenu(gifLab) {
     })();
 }
 
-function GifLabControls(gifLab) {
+function GifDmpControls(gifDmp) {
 
     var domControls = $('#toolbar-controls');
     var domButtons = domControls.find('button[data-command]');
@@ -337,7 +337,7 @@ function GifLabControls(gifLab) {
     // start in "paused" state
     updateIcon(false);
 
-    gifLab.events.on('initPlayer', function(gifPlayer) {
+    gifDmp.events.on('initPlayer', function(gifPlayer) {
 
         updateIcon(false);
 
@@ -395,7 +395,7 @@ function GifLabControls(gifLab) {
     });
 }
 
-function GifLabUserInput(gifLab) {
+function GifDmpUserInput(gifDmp) {
     
     var domUserInput = $('#user-input');
     var domCountdown = domUserInput.find('.countdown');
@@ -404,7 +404,7 @@ function GifLabUserInput(gifLab) {
     
     domUserInput.hide();
     
-    gifLab.events.on('initPlayer', function(gifPlayer) {
+    gifDmp.events.on('initPlayer', function(gifPlayer) {
         domCountdown.empty();
         
         domUserInput.fadeOut();
@@ -455,8 +455,8 @@ function GifLabUserInput(gifLab) {
     });
 }
 
-function GifLabAutoplay(gifLab) {
-    gifLab.events.on('initPlayer', function(gifPlayer) {
+function GifDmpAutoplay(gifDmp) {
+    gifDmp.events.on('initPlayer', function(gifPlayer) {
         gifPlayer.events.on('ready', function() {
             var frameCount = gifPlayer.getFrameCount();
             if (frameCount > 1) {
@@ -466,7 +466,7 @@ function GifLabAutoplay(gifLab) {
     });
 }
 
-function GifLabDragAndDrop(gifLab) {
+function GifDmpDragAndDrop(gifDmp) {
 
     var domDocument = $(document);
     
@@ -484,11 +484,11 @@ function GifLabDragAndDrop(gifLab) {
             return;
         }
 
-        gifLab.loadBlob(file);
+        gifDmp.loadBlob(file);
     });
 }
 
-function GifLabInfo(gifLab) {
+function GifDmpInfo(gifDmp) {
     
     var domSidebar = $('#info-sidebar');
     var domHdrPanel = domSidebar.find('#info-panel-hdr');
@@ -784,7 +784,7 @@ function GifLabInfo(gifLab) {
         }
     }
     
-    gifLab.events.on('initPlayer', function(gifPlayer) {
+    gifDmp.events.on('initPlayer', function(gifPlayer) {
         
         framePrev = null;
         domColorTables = [];
