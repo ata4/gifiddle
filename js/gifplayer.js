@@ -18,15 +18,15 @@ function GifPlayer(canvas) {
     var renderBackground = false;
     
     // override clearRect so it can also render the background color when enabled
-    ctx.clearRect = function(top, left, width, height) {
+    ctx.clearRect = function(x, y, width, height) {
         // I'd like a super.clearRect(), but JavaScript disagrees...
-        Object.getPrototypeOf(this).clearRect.call(this, top, left, width, height);
+        Object.getPrototypeOf(this).clearRect.call(this, x, y, width, height);
 
         var hdr = gif.hdr;
         if (!renderRaw && renderBackground && hdr.gctFlag) {
             this.save();
             this.fillStyle = 'rgb(' + hdr.gct[hdr.bgColor].join() + ')';
-            this.fillRect(top, left, width, height);
+            this.fillRect(x, y, width, height);
             this.restore();
         }
     };
@@ -45,6 +45,14 @@ function GifPlayer(canvas) {
         // clear canvas before rendering the background
         if (frameIndex === 0) {
             instance.clear();
+        }
+        
+        // shade frame background in raw mode
+        if (renderRaw) {
+            ctx.save();
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(frame.left, frame.top, frame.width, frame.height);
+            ctx.restore();
         }
         
         // render new frame
