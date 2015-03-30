@@ -170,11 +170,19 @@ function GifPlayer(canvas) {
 
             playing = true;
             
+            function playNextLoop() {
+                if (playNext()) {
+                    playLoop();
+                }
+            }
+            
             function playLoop() {
+                var delay = 0;
                 do {
                     var frame = that.getFrame();
                     var gce = frame.gce;
-                    var delay = gce ? gce.delayTime : -1;
+                    
+                    delay = gce ? gce.delayTime : -1;
                     
                     // cancel previous user input
                     if (userInput) {
@@ -198,11 +206,7 @@ function GifPlayer(canvas) {
                     
                     if (delay > 0) {
                         // play next frame with delay
-                        timeout = setTimeout(function () {
-                            if (playNext()) {
-                                playLoop();
-                            }
-                        }, delay * 10);
+                        timeout = setTimeout(playNextLoop, delay * 10);
                     } else {
                         // play next frame immediately
                         if (!playNext()) {
@@ -384,7 +388,7 @@ function GifPlayer(canvas) {
     };
     
     return instance;
-};
+}
 
 function GifFile() {
     this.hdr = null;
@@ -392,10 +396,14 @@ function GifFile() {
     this.comments = [];
     this.frames = [];
     this.worker = undefined;
-};
+}
 
 GifFile.prototype = {
     load: function(buffer, callback) {
+        if (!callback) {
+            callback = function() {};
+        }
+        
         var gce;
         var handleBlock = function(block) {
             switch (block.type) {
@@ -434,7 +442,7 @@ GifFile.prototype = {
                     break;
 
                 case 'eof':
-                    callback && callback();
+                    callback();
                     break;
             }
         }.bind(this);
@@ -483,7 +491,7 @@ function GifFrame(hdr, gce, block) {
     if (this.gce && this.gce.transparencyFlag) {
         this.trans = this.gce.transparencyIndex;
     }
-};
+}
 
 GifFrame.prototype = {
     blit: function(ctx) {
