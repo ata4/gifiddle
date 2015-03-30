@@ -1,10 +1,11 @@
+/*jshint bitwise: false*/
+
 'use strict';
 
 function Gif() {}
 
 Gif.prototype = {
-    handleBlock: function(block) {  
-    },
+    handleBlock: function(block) {},
     parse: function(buffer) {
         var st = new GifStream(buffer);
 
@@ -26,8 +27,8 @@ Gif.prototype = {
         function readBlockSize(expected) {
             var size = st.readUint8();
             if (size !== expected) {
-                console.error("Unexpected block size "
-                        + size + ", expected " + expected);
+                console.error("Unexpected block size " + size +
+                    ", expected " + expected);
             }
         }
 
@@ -130,7 +131,7 @@ Gif.prototype = {
                 output[op++] = k;
 
                 op += chaseLength;
-                var b = op;  // Track pointer, writing backwards.
+                var tp = op;  // Track pointer, writing backwards.
 
                 if (chaseCode !== code) {  // The case of emitting {CODE-1} + k.
                     output[op++] = k;
@@ -139,7 +140,7 @@ Gif.prototype = {
                 chase = chaseCode;
                 while (chaseLength--) {
                     chase = codeTable[chase];
-                    output[--b] = chase & 0xff;  // Write backwards.
+                    output[--tp] = chase & 0xff;  // Write backwards.
                     chase >>= 8;  // Pull down to the prefix code.
                 }
 
@@ -368,8 +369,8 @@ Gif.prototype = {
         parseHeader(hdr);
         this.handleBlock(hdr);
 
-        do {
-            var block = {};
+        var block = {};
+        do { 
             block.sentinel = st.readUint8();
 
             switch (String.fromCharCode(block.sentinel)) { // For ease of matching
@@ -400,10 +401,10 @@ function GifError() {
 GifError.prototype = new Error();
 
 function GifStream(buffer) {
-    
+
     var data = new DataView(buffer);
     var pos = 0;
-    
+
     function nextOffset(n) {
         if (pos >= data.byteLength) {
             throw new Error('Attempted to read past end of stream.');
@@ -413,7 +414,7 @@ function GifStream(buffer) {
         pos += n;
         return r;
     }
-    
+
     function SubBlockStream(st) {
 
         var size = 0;
@@ -462,7 +463,7 @@ function GifStream(buffer) {
             }
         };
     }
-    
+
     return {
         readUint8: function () {
             return data.getUint8(nextOffset(1));
