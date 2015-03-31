@@ -292,22 +292,25 @@ Gif.prototype = {
                     block.extType = 'gce';
                     parseGCExt(block);
                     break;
+
                 case 0xFE:
                     block.extType = 'com';
                     parseComExt(block);
                     break;
+
                 case 0x01:
                     block.extType = 'pte';
                     parsePTExt(block);
                     break;
+
                 case 0xFF:
                     block.extType = 'app';
                     parseAppExt(block);
                     break;
+
                 default:
                     block.extType = 'unknown';
                     parseUnknownExt(block);
-                    break;
             }
         }
 
@@ -369,8 +372,9 @@ Gif.prototype = {
         parseHeader(hdr);
         this.handleBlock(hdr);
 
-        var block = {};
-        do { 
+        main:
+        while (true) {
+            var block = {};
             block.sentinel = st.readUint8();
 
             switch (String.fromCharCode(block.sentinel)) { // For ease of matching
@@ -379,19 +383,22 @@ Gif.prototype = {
                     parseExt(block);
                     this.handleBlock(block);
                     break;
+
                 case ',':
                     block.type = 'img';
                     parseImg(block);
                     this.handleBlock(block);
                     break;
+
                 case ';':
                     block.type = 'eof';
                     this.handleBlock(block);
-                    break;
+                    break main;
+
                 default:
                     throw new GifError('Unknown block: 0x' + block.sentinel.toString(16)); // TODO: Pad this with a 0.
             }
-        } while (block.type !== 'eof');
+        }
     }
 };
 
