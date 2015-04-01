@@ -1,13 +1,13 @@
 $(function() {
-    var gifDmp = new GifDmp();
+    var gifiddle = new Gifiddle();
     
     // init modules
-    GifDmpMenu(gifDmp);
-    GifDmpInfo(gifDmp);
-    GifDmpControls(gifDmp);
-    GifDmpUserInput(gifDmp);
-    GifDmpDragAndDrop(gifDmp);
-    GifDmpAutoplay(gifDmp);
+    GifiddleMenu(gifiddle);
+    GifiddleInfo(gifiddle);
+    GifiddleControls(gifiddle);
+    GifiddleUserInput(gifiddle);
+    GifiddleDragAndDrop(gifiddle);
+    GifiddleAutoplay(gifiddle);
     
     // auto-load image in parameters
     var url = document.URL;
@@ -15,14 +15,14 @@ $(function() {
     if (urlFragIndex !== -1) {
         var gifUrl = url.substring(urlFragIndex + 1);
         if (gifUrl.length > 0) {
-            gifDmp.loadUrl(gifUrl);
+            gifiddle.loadUrl(gifUrl);
         }
     }
 });
 
-function GifDmp() {
+function Gifiddle() {
     
-    function GifDmpLoader() {
+    function GifiddleLoader() {
 
         var domViewport = $('#viewport');
         var domLoaderIcon = $('#loader-icon');
@@ -68,7 +68,7 @@ function GifDmp() {
     
     return {
         events: new Events(),
-        loader: new GifDmpLoader(),
+        loader: new GifiddleLoader(),
         loadBuffer: function(buffer) {
             if (player) {
                 player.destroy();
@@ -160,7 +160,7 @@ function GifDmp() {
     };
 }
 
-function GifDmpMenu(gifDmp) {
+function GifiddleMenu(gifiddle) {
 
     // global elements
     var domToolbar = $('#toolbar');
@@ -183,7 +183,7 @@ function GifDmpMenu(gifDmp) {
                 return;
             }
 
-            gifDmp.loadBlob(file);
+            gifiddle.loadBlob(file);
         });
 
         domFileLink.on('click', function(event) {
@@ -200,7 +200,7 @@ function GifDmpMenu(gifDmp) {
         domForm.validator().on('submit', function(event) {
             if (!event.isDefaultPrevented()) {
                 event.preventDefault();
-                gifDmp.loadUrl(domInput.val());
+                gifiddle.loadUrl(domInput.val());
                 domModal.modal('hide');
             }
         });
@@ -211,7 +211,7 @@ function GifDmpMenu(gifDmp) {
         var domCheckboxRenderRaw = domToolbarMenu.find('#checkbox-render-raw');
         var domCheckboxRenderBG = domToolbarMenu.find('#checkbox-render-bg');
 
-        gifDmp.events.on('initPlayer', function(gifPlayer) {
+        gifiddle.events.on('initPlayer', function(gifPlayer) {
             domCheckboxRenderRaw.off();
             domCheckboxRenderRaw.on('change', function(event) {
                 if (gifPlayer.isReady()) {
@@ -281,7 +281,7 @@ function GifDmpMenu(gifDmp) {
             }
         }
         
-        gifDmp.events.on('initPlayer', function(gifPlayer) {
+        gifiddle.events.on('initPlayer', function(gifPlayer) {
             gifPlayer.events.on('ready', function(gifFile) {
                 commentArray = gifFile.comments;
                 commentIndex = 0;
@@ -303,7 +303,7 @@ function GifDmpMenu(gifDmp) {
     })();
 }
 
-function GifDmpControls(gifDmp) {
+function GifiddleControls(gifiddle) {
 
     var domControls = $('#toolbar-controls');
     var domButtons = domControls.find('button[data-command]');
@@ -337,7 +337,7 @@ function GifDmpControls(gifDmp) {
     // start in "paused" state
     updateIcon(false);
 
-    gifDmp.events.on('initPlayer', function(gifPlayer) {
+    gifiddle.events.on('initPlayer', function(gifPlayer) {
 
         updateIcon(false);
 
@@ -395,7 +395,7 @@ function GifDmpControls(gifDmp) {
     });
 }
 
-function GifDmpUserInput(gifDmp) {
+function GifiddleUserInput(gifiddle) {
     
     var domUserInput = $('#user-input');
     var domCountdown = domUserInput.find('.countdown');
@@ -404,7 +404,7 @@ function GifDmpUserInput(gifDmp) {
     
     domUserInput.hide();
     
-    gifDmp.events.on('initPlayer', function(gifPlayer) {
+    gifiddle.events.on('initPlayer', function(gifPlayer) {
         domCountdown.empty();
         
         domUserInput.fadeOut();
@@ -455,8 +455,8 @@ function GifDmpUserInput(gifDmp) {
     });
 }
 
-function GifDmpAutoplay(gifDmp) {
-    gifDmp.events.on('initPlayer', function(gifPlayer) {
+function GifiddleAutoplay(gifiddle) {
+    gifiddle.events.on('initPlayer', function(gifPlayer) {
         gifPlayer.events.on('ready', function() {
             var frameCount = gifPlayer.getFrameCount();
             if (frameCount > 1) {
@@ -466,7 +466,7 @@ function GifDmpAutoplay(gifDmp) {
     });
 }
 
-function GifDmpDragAndDrop(gifDmp) {
+function GifiddleDragAndDrop(gifiddle) {
 
     var domDocument = $(document);
     
@@ -484,11 +484,11 @@ function GifDmpDragAndDrop(gifDmp) {
             return;
         }
 
-        gifDmp.loadBlob(file);
+        gifiddle.loadBlob(file);
     });
 }
 
-function GifDmpInfo(gifDmp) {
+function GifiddleInfo(gifiddle) {
     
     var domSidebar = $('#info-sidebar');
     var domHdrPanel = domSidebar.find('#info-panel-hdr');
@@ -784,7 +784,7 @@ function GifDmpInfo(gifDmp) {
         }
     }
     
-    gifDmp.events.on('initPlayer', function(gifPlayer) {
+    gifiddle.events.on('initPlayer', function(gifPlayer) {
         
         framePrev = null;
         domColorTables = [];

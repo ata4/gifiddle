@@ -107,3 +107,7 @@
 #toolbar-controls .slider-value {
     width: 4em;
 }
+
+a {
+    cursor: pointer;
+}
