@@ -8,16 +8,7 @@ $(function() {
     GifiddleUserInput(gifiddle);
     GifiddleDragAndDrop(gifiddle);
     GifiddleAutoplay(gifiddle);
-    
-    // auto-load image in parameters
-    var url = document.URL;
-    var urlFragIndex = url.indexOf('#');
-    if (urlFragIndex !== -1) {
-        var gifUrl = url.substring(urlFragIndex + 1);
-        if (gifUrl.length > 0) {
-            gifiddle.loadUrl(gifUrl);
-        }
-    }
+    GifiddleAutoload(gifiddle);
 });
 
 function Gifiddle() {
@@ -466,6 +457,17 @@ function GifiddleAutoplay(gifiddle) {
             }
         });
     });
+}
+
+function GifiddleAutoload(gifiddle) {
+    var url = document.URL;
+    var urlFragIndex = url.indexOf('#');
+    if (urlFragIndex !== -1) {
+        var gifUrl = url.substring(urlFragIndex + 1);
+        if (gifUrl.length > 0) {
+            gifiddle.loadUrl(gifUrl);
+        }
+    }
 }
 
 function GifiddleDragAndDrop(gifiddle) {
