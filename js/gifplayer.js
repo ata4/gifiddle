@@ -288,12 +288,14 @@ function GifPlayer(canvas) {
         setFrameIndex: function(frameIndex) {
             var frameCount = this.getFrameCount();
             
-            while (frameIndex < 0) {
-                frameIndex += frameCount;
-            }
+            if (frameCount > 0) {
+                while (frameIndex < 0) {
+                    frameIndex += frameCount;
+                }
 
-            while (frameIndex >= frameCount) {
-                frameIndex -= frameCount;
+                while (frameIndex >= frameCount) {
+                    frameIndex -= frameCount;
+                }
             }
 
             frameIndexCurr = frameIndex;
