@@ -291,19 +291,53 @@ function GifPlayer(canvas) {
             
             var frameCount = this.getFrameCount();
             
-            if (frameCount > 0) {
-                while (frameIndex < 0) {
-                    frameIndex += frameCount;
-                }
+            // don't update if there are no frames
+            if (frameCount === 0) {
+                return;
+            }
+            
+            while (frameIndex < 0) {
+                frameIndex += frameCount;
+            }
 
-                while (frameIndex >= frameCount) {
-                    frameIndex -= frameCount;
-                }
+            while (frameIndex >= frameCount) {
+                frameIndex -= frameCount;
             }
 
             frameIndexCurr = frameIndex;
 
-            this.update();
+            // don't update if the indices are unchanged
+            if (frameIndexCurr === frameIndexPrev) {
+                return;
+            }
+
+            this.events.emit('update', frameIndexCurr, frameIndexPrev);
+
+            // check if frames need to be replayed 
+            var frameStart;
+            var frameEnd;
+
+            if (renderRaw) {
+                this.clear();
+                frameStart = frameEnd = frameIndexCurr;
+            } else {
+                if (frameIndexCurr < frameIndexPrev) {
+                    // next frame is behind the current, clear screen and re-render
+                    // all frames from start to the current position
+                    frameStart = 0;
+                    frameEnd = frameIndexCurr;
+                } else {
+                    // next frame comes after the current
+                    frameStart = frameIndexPrev + 1;
+                    frameEnd = frameIndexCurr;
+                }
+            }
+
+            for (var i = frameStart; i <= frameEnd; i++) {
+                render(i);
+            }
+
+            frameIndexPrev = frameIndexCurr;
         },
         getFrameIndex: function() {
             return frameIndexCurr;
@@ -342,40 +376,6 @@ function GifPlayer(canvas) {
         isRenderBackground: function() {
             return renderBackground;
         },
-        update: function() {
-            // don't update if the indices are unchanged
-            if (frameIndexCurr === frameIndexPrev) {
-                return;
-            }
-
-            this.events.emit('update', frameIndexCurr, frameIndexPrev);
-
-            // check if frames need to be replayed 
-            var frameStart;
-            var frameEnd;
-
-            if (renderRaw) {
-                this.clear();
-                frameStart = frameEnd = frameIndexCurr;
-            } else {
-                if (frameIndexCurr < frameIndexPrev) {
-                    // next frame is behind the current, clear screen and re-render
-                    // all frames from start to the current position
-                    frameStart = 0;
-                    frameEnd = frameIndexCurr;
-                } else {
-                    // next frame comes after the current
-                    frameStart = frameIndexPrev + 1;
-                    frameEnd = frameIndexCurr;
-                }
-            }
-
-            for (var i = frameStart; i <= frameEnd; i++) {
-                render(i);
-            }
-
-            frameIndexPrev = frameIndexCurr;
-        },
         refresh: function() {
             var frameIndex = frameIndexCurr;
             if (frameIndex === 0) {
@@ -400,6 +400,8 @@ function GifPlayer(canvas) {
             ready = false;
             this.events.emit('destroy');
             this.events.off();
+            
+            frameIndexCurr = frameIndexPrev = 0;
         }
     };
     
