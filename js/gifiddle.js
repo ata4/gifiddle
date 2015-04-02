@@ -547,7 +547,18 @@ function GifiddleInfo(gifiddle) {
                 bytes /= thresh;
                 ++u;
             } while(bytes >= thresh);
-            return bytes.toFixed(1) + ' ' + units[u];
+            return bytes.toFixed(2) + ' ' + units[u];
+        },
+        bitrate: function(bytes) {
+            var thresh = 1000;
+            if(bytes < thresh) return bytes + ' B';
+            var units = ['k','M','G','T','P','E','Z','Y'];
+            var u = -1;
+            do {
+                bytes /= thresh;
+                ++u;
+            } while(bytes >= thresh);
+            return bytes.toFixed(2) + ' ' + units[u] + 'bit/s';
         },
         delayTime: function(delay) {
             var str = delay + ' (';
@@ -661,6 +672,7 @@ function GifiddleInfo(gifiddle) {
         var ucSizeAbs = 0;
         var colors = 0;
         var colorSet = new Set();
+        var time = 0;
         
         function hashColor(color) {
             var hash = 1;
@@ -693,6 +705,11 @@ function GifiddleInfo(gifiddle) {
                     colorSet.add(hashColor(color));
                 });
             }
+            
+            var gce = frame.gce;
+            if (gce) {
+                time += gce.delayTime;
+            }
         });
         
         statsTable.row('File size', formatter.byteSize(gifFile.byteLength));
@@ -715,6 +732,19 @@ function GifiddleInfo(gifiddle) {
             'Total number of unique colors in the GIF.\n' + 
             'Includes colors from local and global color tables.'
         );
+
+        if (time > 0) {
+            var timeSec = time / 100;
+            statsTable.row('Total time', timeSec.toFixed(2) + 's').attr('title',
+                'Sum of all frame delays, which defines the duration of a GIF.'
+            );
+            statsTable.row('Average bitrate', formatter.bitrate((cSize / timeSec) * 8)).attr('title',
+                'If GIF was a video codec, this would be the average bitrate.'
+            );
+            statsTable.row('Average framerate', (gifFile.frames.length / timeSec).toFixed(2) + ' fps').attr('title',
+                'If GIF was a video codec, this would be the average framerate.'
+            );;
+        }
     }
     
     var framePrev;
