@@ -14,8 +14,7 @@ function GifPlayer(canvas) {
     var ready = false;
     var userInput = false;
     
-    var renderRaw = false;
-    var renderBackground = false;
+    var options;
     
     // override clearRect so it can also render the background color when enabled
     ctx.clearRect = function(x, y, width, height) {
@@ -23,7 +22,7 @@ function GifPlayer(canvas) {
         Object.getPrototypeOf(this).clearRect.call(this, x, y, width, height);
 
         var hdr = gif.hdr;
-        if (!renderRaw && renderBackground && hdr.gctFlag) {
+        if (!options.isRenderRaw() && options.isRenderBackground() && hdr.gctFlag) {
             this.save();
             this.fillStyle = 'rgb(' + hdr.gct[hdr.bgColor].join() + ')';
             this.fillRect(x, y, width, height);
@@ -32,6 +31,7 @@ function GifPlayer(canvas) {
     };
     
     function render(frameIndex) {
+        var renderRaw = options.isRenderRaw();
         var frame = instance.getFrame(frameIndex);
         if (!frame) {
             throw new Error("Invalid frame index: " + frameIndex);
@@ -317,7 +317,7 @@ function GifPlayer(canvas) {
             var frameStart;
             var frameEnd;
 
-            if (renderRaw) {
+            if (options.isRenderRaw()) {
                 this.clear();
                 frameStart = frameEnd = frameIndexCurr;
             } else {
@@ -352,39 +352,8 @@ function GifPlayer(canvas) {
                 return gif.frames[frameIndexCurr];
             }
         },
-        setRenderRaw: function(_renderRaw) {
-            if (renderRaw === _renderRaw) {
-                return;
-            }
-            
-            renderRaw = _renderRaw;
-            
-            this.refresh();
-        },
-        isRenderRaw: function() {
-            return renderRaw;
-        },
-        setRenderBackground: function(_renderBackground) {
-            if (renderBackground === _renderBackground) {
-                return;
-            }
-            
-            renderBackground = _renderBackground;
-            
-            this.refresh();
-        },
-        isRenderBackground: function() {
-            return renderBackground;
-        },
-        refresh: function() {
-            var frameIndex = frameIndexCurr;
-            if (frameIndex === 0) {
-                this.setNext();
-                this.setPrevious();
-            } else {
-                this.setFrameIndex(0);
-                this.setFrameIndex(frameIndex);
-            }
+        getOptions: function() {
+            return options;
         },
         clear: function() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);            
@@ -405,7 +374,54 @@ function GifPlayer(canvas) {
         }
     };
     
+    options = new GifPlayerOptions(instance);
+    
     return instance;
+}
+
+function GifPlayerOptions(gifPlayer) {
+    
+    var renderRaw = false;
+    var renderBackground = false;
+    
+    function refresh() {
+        var frameIndex = gifPlayer.getFrameIndex();
+        if (frameIndex === 0) {
+            gifPlayer.setNext();
+            gifPlayer.setPrevious();
+        } else {
+            gifPlayer.setFrameIndex(0);
+            gifPlayer.setFrameIndex(frameIndex);
+        }
+    }
+    
+    this.setRenderRaw = function(_renderRaw) {
+        if (renderRaw === _renderRaw) {
+            return;
+        }
+
+        renderRaw = _renderRaw;
+
+        refresh();
+    };
+    
+    this.isRenderRaw = function() {
+        return renderRaw;
+    };
+    
+    this.setRenderBackground = function(_renderBackground) {
+        if (renderBackground === _renderBackground) {
+            return;
+        }
+
+        renderBackground = _renderBackground;
+
+        refresh();
+    };
+    
+    this.isRenderBackground = function() {
+        return renderBackground;
+    }
 }
 
 function GifFile() {

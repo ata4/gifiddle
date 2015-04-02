@@ -204,25 +204,27 @@ function GifiddleMenu(gifiddle) {
     (function() {
         var domCheckboxRenderRaw = domToolbarMenu.find('#checkbox-render-raw');
         var domCheckboxRenderBG = domToolbarMenu.find('#checkbox-render-bg');
-
+        
         gifiddle.events.on('initPlayer', function(gifPlayer) {
+            var options = gifPlayer.getOptions();
+            
             domCheckboxRenderRaw.off();
             domCheckboxRenderRaw.on('change', function(event) {
                 if (gifPlayer.isReady()) {
-                    gifPlayer.setRenderRaw(event.target.checked);
+                    options.setRenderRaw(event.target.checked);
                 }
             });
             
             domCheckboxRenderBG.off();
             domCheckboxRenderBG.on('change', function(event) {
                 if (gifPlayer.isReady()) {
-                    gifPlayer.setRenderBackground(event.target.checked);
+                    options.setRenderBackground(event.target.checked);
                 }
             });
             
             gifPlayer.events.on('ready', function() {
-                gifPlayer.setRenderRaw(domCheckboxRenderRaw.prop('checked'));
-                gifPlayer.setRenderBackground(domCheckboxRenderBG.prop('checked'));
+                options.setRenderRaw(domCheckboxRenderRaw.prop('checked'));
+                options.setRenderBackground(domCheckboxRenderBG.prop('checked'));
             });
         });
     })();
