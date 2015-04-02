@@ -48,7 +48,8 @@ function Gifiddle() {
     var corsHosts = {
         'imgur.com': true,
         'tumblr.com': true,
-        'googleusercontent.com': true
+        'googleusercontent.com': true,
+        'photobucket.com': true
     };
 
     var domViewport = $('#viewport');
