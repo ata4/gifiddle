@@ -285,6 +285,10 @@ function GifPlayer(canvas) {
             return this.getFrameIndex() === this.getFrameCount() - 1;
         },
         setFrameIndex: function(frameIndex) {
+            if (!ready) {
+                return;
+            }
+            
             var frameCount = this.getFrameCount();
             
             if (frameCount > 0) {
@@ -307,7 +311,7 @@ function GifPlayer(canvas) {
         getFrameCount: function() {
             return gif.frames.length;
         },
-        getFrame: function(frameIndex) {
+        getFrame: function(frameIndex) { 
             if (arguments.length === 1) {
                 return gif.frames[frameIndex];
             } else {
