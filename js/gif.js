@@ -187,11 +187,11 @@ Gif.prototype = {
             hdr.ver = st.readString(3);
 
             if (hdr.sig !== 'GIF') {
-                throw new GifError('Not a GIF file');
+                throw new Error('Not a GIF file');
             }
 
             if (hdr.ver !== '87a' && hdr.ver !== '89a') {
-                throw new GifError('Unsupported GIF version');
+                throw new Error('Unsupported GIF version');
             }
 
             hdr.width = st.readUint16();
@@ -396,16 +396,11 @@ Gif.prototype = {
                     break main;
 
                 default:
-                    throw new GifError('Unknown block: 0x' + block.sentinel.toString(16)); // TODO: Pad this with a 0.
+                    throw new Error('Unknown block: 0x' + block.sentinel.toString(16)); // TODO: Pad this with a 0.
             }
         }
     }
 };
-
-function GifError() {
-}
-
-GifError.prototype = new Error();
 
 function GifStream(buffer) {
 

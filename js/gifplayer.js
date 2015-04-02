@@ -73,12 +73,16 @@ function GifPlayer(canvas) {
         load: function(buffer) {
             gif = new GifFile();
             gif.byteLength = buffer.byteLength;
-            gif.load(buffer, function() {
+            gif.events.on('load', function() {
                 canvas.width = gif.hdr.width;
                 canvas.height = gif.hdr.height;
 
                 setReady();
             }.bind(this));
+            gif.events.on('error', function(evt) {
+                this.events.emit('error', evt);
+            }.bind(this))
+            gif.load(buffer);
         },
         play: function() {
             // don't try to animate static GIFs
@@ -409,11 +413,8 @@ function GifFile() {
 }
 
 GifFile.prototype = {
-    load: function(buffer, callback) {
-        if (!callback) {
-            callback = function() {};
-        }
-        
+    events: new Events(),
+    load: function(buffer) {
         var gce;
         var handleBlock = function(block) {
             switch (block.type) {
@@ -452,22 +453,38 @@ GifFile.prototype = {
                     break;
 
                 case 'eof':
-                    callback();
+                    this.events.emit('load');
                     break;
             }
         }.bind(this);
+        
+        var handleError = function(evt) {
+            this.events.emit('error', evt)
+        }.bind(this);
+        
+        var useWorker = !!window.Worker;
+        
+        // Chrome refuses to run workers on file:// URLs
+        if (window.chrome && window.location.protocol === 'file:') {
+            useWorker = false;
+        }
 
         // load GIF in a worker if possible
-        if (!!window.Worker) {
+        if (useWorker) {
             this.worker = new Worker('js/gifworker.js');
             this.worker.addEventListener('message', function(evt) {
                 handleBlock(evt.data);
             }, false);
+            this.worker.addEventListener('error', handleError, false);
             this.worker.postMessage(buffer);
         } else {
-            var gif = new Gif();
-            gif.handleBlock = handleBlock;
-            gif.parse(buffer);
+            try {
+                var gif = new Gif();
+                gif.handleBlock = handleBlock;
+                gif.parse(buffer);
+            } catch (e) {
+                handleError(e);
+            }
         }
     },
     cancel: function() {

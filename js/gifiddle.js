@@ -80,7 +80,10 @@ function Gifiddle() {
             player.events.on('ready', function() {
                 this.loader.showCanvas();
             }.bind(this));
-
+            player.events.on('error', function(evt) {
+                this.loader.showError(evt.message);
+                console.error(evt);
+            }.bind(this));
             player.load(buffer);
         },
         loadBlob: function(blob) {
