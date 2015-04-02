@@ -72,7 +72,6 @@ function Gifiddle() {
         loadBuffer: function(buffer) {
             if (player) {
                 player.destroy();
-                player = null;
             }
 
             player = new GifPlayer(domViewport[0]);

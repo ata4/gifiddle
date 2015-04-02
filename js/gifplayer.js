@@ -60,13 +60,6 @@ function GifPlayer(canvas) {
 
         framePrev = frame;
     }
-    
-    function setReady() {
-        ready = true;
-        instance.clear();
-        instance.setFirst();
-        instance.events.emit('ready', gif);
-    }
         
     var instance = {
         events: new Events(),
@@ -77,11 +70,13 @@ function GifPlayer(canvas) {
                 canvas.width = gif.hdr.width;
                 canvas.height = gif.hdr.height;
 
-                setReady();
+                ready = true;
+                this.setFirst();
+                this.events.emit('ready', gif);
             }.bind(this));
             gif.events.on('error', function(evt) {
                 this.events.emit('error', evt);
-            }.bind(this))
+            }.bind(this));
             gif.load(buffer);
         },
         play: function() {
@@ -392,12 +387,15 @@ function GifPlayer(canvas) {
             framePrev = null;
         },
         destroy: function() {
-            if (!ready) {
-                gif.cancel();
-            }
-            
             this.stop();
-            this.clear();
+            gif.destroy();
+            
+            canvas.width = 0;
+            canvas.height = 0;
+
+            ready = false;
+            this.events.emit('destroy');
+            this.events.off();
         }
     };
     
@@ -409,7 +407,7 @@ function GifFile() {
     this.loopCount = -1;
     this.comments = [];
     this.frames = [];
-    this.worker = undefined;
+    this.worker;
 }
 
 GifFile.prototype = {
@@ -459,7 +457,7 @@ GifFile.prototype = {
         }.bind(this);
         
         var handleError = function(evt) {
-            this.events.emit('error', evt)
+            this.events.emit('error', evt);
         }.bind(this);
         
         var useWorker = !!window.Worker;
@@ -487,12 +485,19 @@ GifFile.prototype = {
             }
         }
     },
-    cancel: function() {
+    destroy: function() {
         // terminate worker if running
         if (this.worker) {
             this.worker.terminate();
             this.worker = undefined;
         }
+        
+        this.hdr = null;
+        this.loopCount = -1;
+        this.comments = [];
+        this.frames = [];
+        this.events.emit('destroy');
+        this.events.off();
     }
 };
 
