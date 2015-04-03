@@ -65,7 +65,7 @@ function Gifiddle() {
             if (player) {
                 player.destroy();
             }
-
+            
             player = new GifPlayer(domViewport[0]);
             this.events.emit('initPlayer', player);
             player.events.on('ready', function() {
@@ -79,15 +79,21 @@ function Gifiddle() {
         },
         loadBlob: function(blob) {
             this.loader.showLoad();
-            
-            document.title = title + ': ' + blob.name;
-            window.location.hash = '';
 
             var reader = new FileReader();
             reader.addEventListener('load', function(event) {
                 this.loadBuffer(event.target.result);
             }.bind(this));
             reader.readAsArrayBuffer(blob);
+        },
+        loadFile: function(file) {
+            document.title = title + ': ' + file.name;
+            window.location.hash = '';
+            
+            
+            console.log(file);
+            
+            this.loadBlob(file);
         },
         loadUrl: function(url) {
             if (url.length === 0) {
@@ -120,6 +126,8 @@ function Gifiddle() {
             } else {
                 document.title = title;
             }
+            
+            window.location.hash = url;
 
             // Note: jQuery's .ajax() doesn't support binary files well, therefore
             // a direct XHR level 2 object is used instead
@@ -132,8 +140,8 @@ function Gifiddle() {
             xhr.onload = function () {
                 // only allow 'OK'
                 if (xhr.status === 200) {
-                    window.location.hash = url;
-                    this.loadBuffer(xhr.response);
+                    this.url = url;
+                    this.loadBlob(xhr.response);
                 } else {
                     this.loader.showError('Unable to download GIF: ' + new HttpStatus(xhr.status));
                 }
@@ -148,7 +156,7 @@ function Gifiddle() {
             }.bind(this);
             
             xhr.open('GET', requestUrl, true);
-            xhr.responseType = 'arraybuffer';
+            xhr.responseType = 'blob';
             xhr.send();
         }
     };
@@ -324,7 +332,7 @@ function GifiddleControls(gifiddle) {
     }
 
     function updateTooltip(frameIndex) {
-        domSliderValue.html(frameIndex);
+        domSliderValue.text(frameIndex);
     }
 
     // hide controls on default
@@ -743,7 +751,44 @@ function GifiddleInfo(gifiddle) {
             );
             statsTable.row('Average framerate', (gifFile.frames.length / timeSec).toFixed(2) + ' fps').attr('title',
                 'If GIF was a video codec, this would be the average framerate.'
-            );;
+            );
+        }
+        
+        function parseXMPToolkit(xmpDoc) {
+            var xmpMeta = xmpDoc.getElementsByTagNameNS('adobe:ns:meta/', 'xmpmeta')[0];
+            if (!xmpMeta) {
+                return;
+            }
+            
+            var xmptk = xmpMeta.getAttributeNS('adobe:ns:meta/', 'xmptk');
+            if (!xmptk) {
+                return;
+            }
+            
+            statsTable.row('XMP toolkit', xmptk);
+        }
+        
+        function parseXMPCreatorTool(xmpDoc) {
+            var rdfDesc = xmpDoc.getElementsByTagNameNS('http://www.w3.org/1999/02/22-rdf-syntax-ns#', 'Description')[0];
+            if (!rdfDesc) {
+                return;
+            }
+
+            var creatorTool = rdfDesc.getAttributeNS('http://ns.adobe.com/xap/1.0/', 'CreatorTool');
+            if (!creatorTool) {
+                return;
+            }
+
+            statsTable.row('Creator tool', creatorTool);
+        }
+
+        var xmp = gifFile.xmp;
+        if (xmp && xmp.startsWith('<?xpacket') && xmp.endsWith('<?xpacket end="r"?>')) {
+            var parser = new DOMParser();
+            var xmpDoc = parser.parseFromString(xmp, 'text/xml');
+
+            parseXMPToolkit(xmpDoc);
+            parseXMPCreatorTool(xmpDoc);
         }
     }
     

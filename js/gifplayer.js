@@ -421,7 +421,7 @@ function GifPlayerOptions(gifPlayer) {
     
     this.isRenderBackground = function() {
         return renderBackground;
-    }
+    };
 }
 
 function GifFile() {
@@ -465,10 +465,15 @@ GifFile.prototype = {
                             break;
 
                         case 'app':
-                            if (block.identifier === 'NETSCAPE' && block.subBlockID === 1) {
-                                this.loopCount = block.loopCount;
+                            switch (block.identifier) {
+                                case 'NETSCAPE':
+                                    this.loopCount = block.loopCount;
+                                    break;
+                                    
+                                case 'XMP Data':
+                                    this.xmp = block.xmp;
+                                    break;
                             }
-                            break;
                     }
                     break;
 
