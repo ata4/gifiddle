@@ -185,7 +185,7 @@ function GifiddleMenu(gifiddle) {
                 return;
             }
 
-            gifiddle.loadBlob(file);
+            gifiddle.loadFile(file);
         });
 
         domFileLink.on('click', function(event) {
@@ -499,7 +499,7 @@ function GifiddleDragAndDrop(gifiddle) {
             return;
         }
 
-        gifiddle.loadBlob(file);
+        gifiddle.loadFile(file);
     });
 }
 
