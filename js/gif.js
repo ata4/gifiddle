@@ -255,13 +255,22 @@ Gif.prototype = {
                             block.loopCount = st.readUint16();
                             break;
 
-                            // buffer extension (obsolete, but just in case)
+                        // buffer extension (obsolete, but just in case)
                         case 2:
                             block.bufferSize = st.readUint32();
                             break;
                     }
 
                     st.readUint8(); // block terminator
+                }
+                
+                function parseXMPExt(block) {
+                    block.xmp = st.readBlock(true).toString();
+                    
+                    // remove fixup table
+                    if (block.xmp.length > 256) {
+                        block.xmp = block.xmp.substring(0, block.xmp.length - 257);
+                    }
                 }
 
                 function parseUnknownAppExt(block) {
@@ -274,6 +283,10 @@ Gif.prototype = {
                 switch (block.identifier) {
                     case 'NETSCAPE':
                         parseNetscapeExt(block);
+                        break;
+                        
+                    case 'XMP Data':
+                        parseXMPExt(block);
                         break;
 
                     default:
@@ -417,7 +430,7 @@ function GifStream(buffer) {
         return r;
     }
 
-    function SubBlockStream(st) {
+    function SubBlockStream(st, xmpMode) {
 
         var size = 0;
         var eof = false;
@@ -433,6 +446,9 @@ function GifStream(buffer) {
                     if (size === 0) {
                         eof = true;
                         return -1;
+                    }
+                    if (xmpMode) {
+                        return size;
                     }
                 }
 
@@ -490,8 +506,8 @@ function GifStream(buffer) {
             }
             return s;
         },
-        readBlock: function() {
-            return new SubBlockStream(this);
+        readBlock: function(xmpMode) {
+            return new SubBlockStream(this, xmpMode);
         }
     };
 }
