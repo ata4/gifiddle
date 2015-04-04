@@ -499,12 +499,14 @@ function GifiddleInfo(gifiddle) {
     
     var domSidebar = $('#info-sidebar');
     var domHdrPanel = domSidebar.find('#info-panel-hdr');
+    var domXmpPanel = domSidebar.find('#info-panel-xmp');
     var domGcePanel = domSidebar.find('#info-panel-gce');
     var domImgPanel = domSidebar.find('#info-panel-img');
     var domPtePanel = domSidebar.find('#info-panel-pte');
     var domStatsPanel = domSidebar.find('#info-panel-stats');
     
     var hdrTable = new Table(domHdrPanel.find('table'));
+    var xmpTable = new Table(domXmpPanel.find('table'));
     var gceTable = new Table(domGcePanel.find('table'));
     var imgTable = new Table(domImgPanel.find('table'));
     var pteTable = new Table(domPtePanel.find('table'));
@@ -655,6 +657,51 @@ function GifiddleInfo(gifiddle) {
         }
     }
     
+    function updateXMP(gifFile) {
+        
+        xmpTable.empty();
+        
+        var xmp = gifFile.xmp;
+        if (xmp && xmp.startsWith('<?xpacket')) {
+            domXmpPanel.show();
+                        
+            var parser = new DOMParser();
+            var xmpDoc = parser.parseFromString(xmp, 'text/xml');
+            
+            var xmpMeta = xmpDoc.getElementsByTagNameNS('adobe:ns:meta/', 'xmpmeta')[0];
+            if (xmpMeta) {
+                var xmptk = xmpMeta.getAttributeNS('adobe:ns:meta/', 'xmptk');
+                if (xmptk) {
+                    xmpTable.row('Toolkit', xmptk);
+                }
+            }
+            
+            var rdfDescs = xmpDoc.getElementsByTagNameNS('http://www.w3.org/1999/02/22-rdf-syntax-ns#', 'Description');
+            
+            for (var i = 0; rdfDescs && i < rdfDescs.length; i++) {
+                var rdfDesc = rdfDescs[i];
+                
+                // scan attributes (Adobe format)
+                for (var j = 0; j < rdfDesc.attributes.length; j++) {
+                    var attr = rdfDesc.attributes[j];
+                    if (attr.name.startsWith('xmp:')) {
+                        xmpTable.row(attr.localName, attr.value);
+                    }
+                }
+                
+                // scan nodes (ExifTool format)
+                for (var i = 0; i < rdfDesc.childNodes.length; i++) {
+                    var node = rdfDesc.childNodes[i];
+                    if (node.nodeName.startsWith('xmp:')) {
+                        xmpTable.row(node.localName, node.textContent);
+                    }
+                }
+            }
+        } else {
+            domXmpPanel.hide();
+        }
+    }
+    
     function updateStats(gifFile) {
         
         domStatsPanel.show();
@@ -739,47 +786,11 @@ function GifiddleInfo(gifiddle) {
                 'If GIF was a video codec, this would be the average framerate.'
             );
         }
-        
-        function parseXMPToolkit(xmpDoc) {
-            var xmpMeta = xmpDoc.getElementsByTagNameNS('adobe:ns:meta/', 'xmpmeta')[0];
-            if (!xmpMeta) {
-                return;
-            }
-            
-            var xmptk = xmpMeta.getAttributeNS('adobe:ns:meta/', 'xmptk');
-            if (!xmptk) {
-                return;
-            }
-            
-            statsTable.row('XMP toolkit', xmptk);
-        }
-        
-        function parseXMPCreatorTool(xmpDoc) {
-            var rdfDesc = xmpDoc.getElementsByTagNameNS('http://www.w3.org/1999/02/22-rdf-syntax-ns#', 'Description')[0];
-            if (!rdfDesc) {
-                return;
-            }
-
-            var creatorTool = rdfDesc.getAttributeNS('http://ns.adobe.com/xap/1.0/', 'CreatorTool');
-            if (!creatorTool) {
-                return;
-            }
-
-            statsTable.row('Creator tool', creatorTool);
-        }
-
-        var xmp = gifFile.xmp;
-        if (xmp && xmp.startsWith('<?xpacket') && xmp.endsWith('<?xpacket end="r"?>')) {
-            var parser = new DOMParser();
-            var xmpDoc = parser.parseFromString(xmp, 'text/xml');
-
-            parseXMPToolkit(xmpDoc);
-            parseXMPCreatorTool(xmpDoc);
-        }
     }
     
     function hideAll() {
         domHdrPanel.hide();
+        domXmpPanel.hide();
         domGcePanel.hide();
         domImgPanel.hide();
         domPtePanel.hide();
@@ -870,6 +881,7 @@ function GifiddleInfo(gifiddle) {
         gifPlayer.events.on('ready', function(gifFile) {
             updateHeader(gifFile);
             updateStats(gifFile);
+            updateXMP(gifFile);
         });
         
         gifPlayer.events.on('update', function() {

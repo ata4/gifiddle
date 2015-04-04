@@ -589,7 +589,6 @@ function GifImageFrame(hdr, gce, img) {
     this.img = img;
     
     var imageData = this.ctx.getImageData(0, 0, this.width, this.height);
-    var numPixels = this.img.pixels.length;
     var colorTable;
 
     if (this.img && this.img.lctFlag) {
@@ -599,15 +598,27 @@ function GifImageFrame(hdr, gce, img) {
     } else {
         throw new GifError('No color table defined');
     }
-
-    for (var i = 0; i < numPixels; i++) {
+    
+    var pixels = this.img.pixels;
+    var colorIndex;
+    var color;
+    
+    for (var i = 0; i < pixels.length; i++) {
+        colorIndex = pixels[i];
+        
+        // skip invalid indices
+        if (colorIndex < 0 || colorIndex >= colorTable.length) {
+            continue;
+        }
+        
         // imageData.data = [R,G,B,A,...]
-        var color = colorTable[this.img.pixels[i]];
+        color = colorTable[colorIndex];
+        
         imageData.data[i * 4 + 0] = color[0];
         imageData.data[i * 4 + 1] = color[1];
         imageData.data[i * 4 + 2] = color[2];
-        
-        if (this.img.pixels[i] === this.trans) {
+    
+        if (colorIndex === this.trans) {
             imageData.data[i * 4 + 3] = 0;
         } else {
             imageData.data[i * 4 + 3] = 255;
@@ -617,7 +628,7 @@ function GifImageFrame(hdr, gce, img) {
     this.ctx.putImageData(imageData, 0, 0);
 
     // free the now unused pixel data buffer
-    this.img.pixels = null;
+    this.img.pixels = pixels = null;
 }
 
 GifImageFrame.prototype = Object.create(GifFrame.prototype);
