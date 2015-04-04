@@ -43,14 +43,6 @@ function Gifiddle() {
             }
         };
     }
-    
-    // set of hosts that have a wildcard ACAO header
-    var corsHosts = {
-        'imgur.com': true,
-        'tumblr.com': true,
-        'googleusercontent.com': true,
-        'photobucket.com': true
-    };
 
     var domViewport = $('#viewport');
     
@@ -95,7 +87,7 @@ function Gifiddle() {
             
             this.loadBlob(file);
         },
-        loadUrl: function(url) {
+        loadUrl: function(url, useProxy) {
             if (url.length === 0) {
                 return;
             }
@@ -109,12 +101,10 @@ function Gifiddle() {
             // strip subdomain
             hostname = hostname.split('.').slice(-2).join('.');
             
-            // Use a CORS proxy unless the host is known to send a wildcard
-            // ACAO header. Cross-domain errors can't be caught with exception
-            // handling due to the intentional filtering, so avoid trial-and-error
-            // requests here.
             var requestUrl = url;
-            if (!corsHosts[hostname]) {
+            
+            // use CORS proxy if requested
+            if (useProxy) {
                 requestUrl = 'https://cors-anywhere.herokuapp.com/' + url;
             }
             
@@ -152,7 +142,12 @@ function Gifiddle() {
             }.bind(this);
 
             xhr.onerror = function() {
-                this.loader.showError('Unable to download GIF: Connection failed');
+                if (useProxy) {
+                    this.loader.showError('Unable to download GIF: Connection failed');
+                } else {
+                    // might be a cross-origin issue, try again with CORS proxy
+                    this.loadUrl(url, true);
+                }
             }.bind(this);
             
             xhr.open('GET', requestUrl, true);
