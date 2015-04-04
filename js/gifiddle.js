@@ -517,13 +517,7 @@ function GifiddleInfo(gifiddle) {
     var imgTable = new Table(domImgPanel.find('table'));
     var pteTable = new Table(domPtePanel.find('table'));
     var statsTable = new Table(domStatsPanel.find('table'));
-    
-    domHdrPanel.hide();
-    domGcePanel.hide();
-    domImgPanel.hide();
-    domPtePanel.hide();
-    domStatsPanel.hide();
-    
+
     var domCheckboxShowInfoRaw = $('#checkbox-show-info');
     
     domCheckboxShowInfoRaw.on('change', function(event) {
@@ -792,6 +786,16 @@ function GifiddleInfo(gifiddle) {
         }
     }
     
+    function hideAll() {
+        domHdrPanel.hide();
+        domGcePanel.hide();
+        domImgPanel.hide();
+        domPtePanel.hide();
+        domStatsPanel.hide();
+    }
+    
+    hideAll();
+    
     var framePrev;
     var frameIndexPrev;
     var domColorTables;
@@ -878,6 +882,10 @@ function GifiddleInfo(gifiddle) {
         
         gifPlayer.events.on('update', function() {
             updateFrame(gifPlayer.getFrame(), gifPlayer.getFrameIndex());
+        });
+        
+        gifPlayer.events.on('destroy', function() {
+            hideAll();
         });
     });
 }
