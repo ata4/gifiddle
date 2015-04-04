@@ -82,9 +82,6 @@ function Gifiddle() {
             document.title = title + ': ' + file.name;
             window.location.hash = '';
             
-            
-            console.log(file);
-            
             this.loadBlob(file);
         },
         loadUrl: function(url, useProxy) {
