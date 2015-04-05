@@ -753,18 +753,21 @@ function GifiddleInfo(gifiddle) {
             }
         });
         
-        statsTable.row('File size', formatter.byteSize(gifFile.byteLength));
-        statsTable.row('Absolute DCR', formatter.compressRatio(cSize, ucSizeRel)).attr('title',
-            'Combined data compression ratio of all frames.\n' +
-            'Typical GIFs have a ratio between 1 to 4 while\n' +
-            'simple graphics with few colors compress much better.'
-        );
-        statsTable.row('Virtual DCR', formatter.compressRatio(cSize, ucSizeAbs)).attr('title',
-            'Combined data compression ratio of all frames if they would\n' +
-            'fill up the entire GIF screen.\n' +
-            'High values (> 10) are typical for well-optimized GIFs,\n' +
-            'such as cinemagraphs.'
-        );
+        if (cSize > 0) {
+            statsTable.row('File size', formatter.byteSize(gifFile.byteLength));
+            statsTable.row('Absolute DCR', formatter.compressRatio(cSize, ucSizeRel)).attr('title',
+                'Combined data compression ratio of all frames.\n' +
+                'Typical GIFs have a ratio between 1 to 4 while\n' +
+                'simple graphics with few colors compress much better.'
+            );
+            statsTable.row('Virtual DCR', formatter.compressRatio(cSize, ucSizeAbs)).attr('title',
+                'Combined data compression ratio of all frames if they would\n' +
+                'fill up the entire GIF screen.\n' +
+                'High values (> 10) are typical for well-optimized GIFs,\n' +
+                'such as cinemagraphs.'
+            );
+        }
+        
         statsTable.row('Total colors', colors).attr('title',
             'Total number of defined colors in the GIF.\n' +
             'Includes colors from local and global color tables.'
