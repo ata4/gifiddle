@@ -44,8 +44,19 @@
         
         <nav id="toolbar" class="flex-container navbar navbar-default navbar-fixed-bottom">   
             <div id="toolbar-menu" class="navbar-inner flex">
-                <a class="navbar-brand">gifiddle</a>
                 <ul class="nav navbar-nav">
+                    <li class="dropdown">
+                        <a id="drop1" class="navbar-brand dropdown-toggle" data-toggle="dropdown" role="button">
+                            gifiddle <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li role="presentation">
+                                <a role="menuitem" tabindex="-1" href="https://github.com/ata4/gifiddle">
+                                    <i class="fa fa-github"></i> View on Github
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                     <li class="dropdown">
                         <a id="drop1" class="dropdown-toggle" data-toggle="dropdown" role="button">
                             <i class="fa fa-file-image-o"></i> File <span class="caret"></span>
