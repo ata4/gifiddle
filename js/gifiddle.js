@@ -644,7 +644,7 @@ function GifiddleInfo(gifiddle) {
     function updateHeader(gifFile) {
         var hdr = gifFile.hdr;
         
-        domHdrPanel.fadeIn();
+        domHdrPanel.show();
         
         hdrTable.empty();
         
@@ -666,7 +666,7 @@ function GifiddleInfo(gifiddle) {
         
         var xmp = gifFile.xmp;
         if (xmp && xmp.startsWith('<?xpacket')) {
-            domXmpPanel.fadeIn();
+            domXmpPanel.show();
                         
             var parser = new DOMParser();
             var xmpDoc = parser.parseFromString(xmp, 'text/xml');
@@ -701,13 +701,13 @@ function GifiddleInfo(gifiddle) {
                 }
             }
         } else {
-            domXmpPanel.fadeOut();
+            domXmpPanel.hide();
         }
     }
     
     function updateStats(gifFile) {
         
-        domStatsPanel.fadeIn();
+        domStatsPanel.show();
         
         statsTable.empty();
         
@@ -813,7 +813,7 @@ function GifiddleInfo(gifiddle) {
         
         var img = frame.img;
         if (img) {
-            domImgPanel.fadeIn();
+            domImgPanel.show();
             
             imgTable.row('Index', frameIndex);
             imgTable.row('Size', img.width + 'x' + img.height);
@@ -836,14 +836,14 @@ function GifiddleInfo(gifiddle) {
             imgTable.row('Compression ratio', formatter.compressRatio(img.lzwSize, img.width * img.height));
             imgTable.row('LZW min. code size', img.lzwMinCodeSize);
         } else {
-            domImgPanel.fadeOut();
+            domImgPanel.hide();
         }
         
         pteTable.empty();
 
         var pte = frame.pte;
         if (pte) {
-            domPtePanel.fadeIn();
+            domPtePanel.show();
             
             pteTable.row('Index', frameIndex);
             pteTable.row('Size', pte.width + 'x' + pte.height);
@@ -852,21 +852,21 @@ function GifiddleInfo(gifiddle) {
             pteTable.row('Foreground color', pte.fgColor);
             pteTable.row('Background color', pte.bgColor);
         } else {
-            domPtePanel.fadeOut();
+            domPtePanel.hide();
         }
         
         gceTable.empty();
 
         var gce = frame.gce;
         if (gce) {
-            domGcePanel.fadeIn();
+            domGcePanel.show();
 
             gceTable.row('Delay', formatter.delayTime(gce.delayTime));
             gceTable.row('Disposal method', formatter.disposalMethod(gce.disposalMethod));
             gceTable.row('Transparent', formatter.boolean(gce.transparencyFlag));
             gceTable.row('Wait for user input', formatter.boolean(gce.userInput));
         } else {
-            domGcePanel.fadeOut();
+            domGcePanel.hide();
         }
     }
     
@@ -886,7 +886,7 @@ function GifiddleInfo(gifiddle) {
         });
         
         gifPlayer.events.on('destroy', function() {
-            domPanels.fadeOut();
+            domSidebar.hide();
         });
     });
 }
