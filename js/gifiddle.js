@@ -356,8 +356,6 @@ function GifiddleControls(gifiddle) {
 
             if (frameCount > 1) {
                 domControls.fadeIn();
-            } else {
-                domControls.fadeOut();
             }
 
             // update slider range and value
@@ -366,6 +364,10 @@ function GifiddleControls(gifiddle) {
             domSlider.val(0);
 
             updateTooltip(0);
+        });
+        
+        gifPlayer.events.on('destroy', function() {
+            domControls.fadeOut();
         });
 
         // DOM events
@@ -498,6 +500,7 @@ function GifiddleDragAndDrop(gifiddle) {
 function GifiddleInfo(gifiddle) {
     
     var domSidebar = $('#info-sidebar');
+    var domPanels = domSidebar.find('.panel');
     var domHdrPanel = domSidebar.find('#info-panel-hdr');
     var domXmpPanel = domSidebar.find('#info-panel-xmp');
     var domGcePanel = domSidebar.find('#info-panel-gce');
@@ -528,9 +531,9 @@ function GifiddleInfo(gifiddle) {
     });
     
     if (domCheckboxShowInfoRaw.prop('checked')) {
-        domSidebar.show();
+        domSidebar.fadeIn();
     } else {
-        domSidebar.hide();
+        domSidebar.fadeOut();
     }
     
     var formatter = {
@@ -641,7 +644,7 @@ function GifiddleInfo(gifiddle) {
     function updateHeader(gifFile) {
         var hdr = gifFile.hdr;
         
-        domHdrPanel.show();
+        domHdrPanel.fadeIn();
         
         hdrTable.empty();
         
@@ -663,7 +666,7 @@ function GifiddleInfo(gifiddle) {
         
         var xmp = gifFile.xmp;
         if (xmp && xmp.startsWith('<?xpacket')) {
-            domXmpPanel.show();
+            domXmpPanel.fadeIn();
                         
             var parser = new DOMParser();
             var xmpDoc = parser.parseFromString(xmp, 'text/xml');
@@ -698,13 +701,13 @@ function GifiddleInfo(gifiddle) {
                 }
             }
         } else {
-            domXmpPanel.hide();
+            domXmpPanel.fadeOut();
         }
     }
     
     function updateStats(gifFile) {
         
-        domStatsPanel.show();
+        domStatsPanel.fadeIn();
         
         statsTable.empty();
         
@@ -791,16 +794,7 @@ function GifiddleInfo(gifiddle) {
         }
     }
     
-    function hideAll() {
-        domHdrPanel.hide();
-        domXmpPanel.hide();
-        domGcePanel.hide();
-        domImgPanel.hide();
-        domPtePanel.hide();
-        domStatsPanel.hide();
-    }
-    
-    hideAll();
+    domPanels.hide();
     
     var framePrev;
     var frameIndexPrev;
@@ -819,7 +813,7 @@ function GifiddleInfo(gifiddle) {
         
         var img = frame.img;
         if (img) {
-            domImgPanel.show();
+            domImgPanel.fadeIn();
             
             imgTable.row('Index', frameIndex);
             imgTable.row('Size', img.width + 'x' + img.height);
@@ -842,14 +836,14 @@ function GifiddleInfo(gifiddle) {
             imgTable.row('Compression ratio', formatter.compressRatio(img.lzwSize, img.width * img.height));
             imgTable.row('LZW min. code size', img.lzwMinCodeSize);
         } else {
-            domImgPanel.hide();
+            domImgPanel.fadeOut();
         }
         
         pteTable.empty();
 
         var pte = frame.pte;
         if (pte) {
-            domPtePanel.show();
+            domPtePanel.fadeIn();
             
             pteTable.row('Index', frameIndex);
             pteTable.row('Size', pte.width + 'x' + pte.height);
@@ -858,21 +852,21 @@ function GifiddleInfo(gifiddle) {
             pteTable.row('Foreground color', pte.fgColor);
             pteTable.row('Background color', pte.bgColor);
         } else {
-            domPtePanel.hide();
+            domPtePanel.fadeOut();
         }
         
         gceTable.empty();
 
         var gce = frame.gce;
         if (gce) {
-            domGcePanel.show();
+            domGcePanel.fadeIn();
 
             gceTable.row('Delay', formatter.delayTime(gce.delayTime));
             gceTable.row('Disposal method', formatter.disposalMethod(gce.disposalMethod));
             gceTable.row('Transparent', formatter.boolean(gce.transparencyFlag));
             gceTable.row('Wait for user input', formatter.boolean(gce.userInput));
         } else {
-            domGcePanel.hide();
+            domGcePanel.fadeOut();
         }
     }
     
@@ -892,7 +886,7 @@ function GifiddleInfo(gifiddle) {
         });
         
         gifPlayer.events.on('destroy', function() {
-            hideAll();
+            domPanels.fadeOut();
         });
     });
 }
