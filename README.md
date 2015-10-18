@@ -28,7 +28,7 @@ GIF87a animations:
 
 * [ANIPEPSI.GIF](http://ata4.github.io/gifiddle/#http://cd.textfiles.com/gifsgalore/GIFS/LOGOS/ANIPEPSI.GIF) - Old Pepsi animation
 * [BUBBLES2.GIF](http://ata4.github.io/gifiddle/#http://cd.textfiles.com/gifsgalore/GIFS/FOOD/BUBBLES2.GIF) - Old bubbles animation
-* [SHINY2.GIF](http://ata4.github.io/gifiddle/#http://cd.textfiles.com/gifsgalore/GIFS/MISC/SHINY2.GIF) - Another animation by Jim Burton
+* [SHINY2.GIF](http://ata4.github.io/gifiddle/#http://cd.textfiles.com/gifsgalore/GIFS/MISC/SHINY2.GIF) - Another animation by Jim Burton (NSFW)
 
 Cinemagraph examples (activate "Render raw frames" to visualize the optimization):
 
