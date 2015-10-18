@@ -32,9 +32,9 @@ GIF87a animations:
 
 Cinemagraph examples (activate "Render raw frames" to visualize the optimization):
 
-* [cab-window-429.gif](http://ata4.github.io/gifiddle/#http://cinemagraphs.com/images/demo/cab-window-429.gif)
-* [louboutin-sparkle-1-429.gif](http://ata4.github.io/gifiddle/#http://cinemagraphs.com/images/demo/louboutin-sparkle-1-429.gif)
-* [hot-dog-429.gif](http://ata4.github.io/gifiddle/#http://cinemagraphs.com/images/demo/hot-dog-429.gif)
+* [cointreau-table-980.gif](http://ata4.github.io/gifiddle/http://static1.squarespace.com/static/51c748abe4b0c275d0aa86bf/56141f2be4b0a4afc2d17505/56141f47e4b050ae7ebb8a20/1444159373902/cointreau-table-980.gif)
+* [patagonia-cinemagraph.gif](http://static1.squarespace.com/static/51c748abe4b0c275d0aa86bf/56141631e4b0095d43132f02/5614164ae4b018c0454fd5e0/1444744691618/patagonia-cinemagraph.gif)
+* [spg.gif](http://ata4.github.io/gifiddle/#http://static1.squarespace.com/static/51c748abe4b0c275d0aa86bf/56141631e4b0095d43132f02/56143453e4b06dc85b46bf6b/1444744863151/spg.gif)
 
 ### Compatibility
 
