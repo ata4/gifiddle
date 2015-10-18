@@ -32,7 +32,7 @@ GIF87a animations:
 
 Cinemagraph examples (activate "Render raw frames" to visualize the optimization):
 
-* [cab-window-429.gif](http://ata4.github.io/gifiddle/#http://ata4.github.io/gifiddle/#http://cinemagraphs.com/images/demo/cab-window-429.gif)
+* [cab-window-429.gif](http://ata4.github.io/gifiddle/#http://cinemagraphs.com/images/demo/cab-window-429.gif)
 * [louboutin-sparkle-1-429.gif](http://ata4.github.io/gifiddle/#http://cinemagraphs.com/images/demo/louboutin-sparkle-1-429.gif)
 * [hot-dog-429.gif](http://ata4.github.io/gifiddle/#http://cinemagraphs.com/images/demo/hot-dog-429.gif)
 
