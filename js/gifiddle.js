@@ -752,7 +752,12 @@ function GifiddleInfo(gifiddle) {
             
             var gce = frame.gce;
             if (gce) {
-                time += gce.delayTime;
+                // if there's a delay of 0, then assume default delay of 100ms that most browsers use
+                if (gce.delayTime == 0 && gifFile.loopCount !== -1) {
+                    time += 10;
+                } else {
+                    time += gce.delayTime;
+                }
             }
         });
         
