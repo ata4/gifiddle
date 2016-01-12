@@ -861,10 +861,15 @@ function GifiddleInfo(gifiddle) {
         var gce = frame.gce;
         if (gce) {
             domGcePanel.show();
+            
+            var transText = formatter.boolean(gce.transparencyFlag);
+            if (gce.transparencyFlag) {
+                transText += ' (' + gce.transparencyIndex + ')';
+            }
 
             gceTable.row('Delay', formatter.delayTime(gce.delayTime));
             gceTable.row('Disposal method', formatter.disposalMethod(gce.disposalMethod));
-            gceTable.row('Transparent', formatter.boolean(gce.transparencyFlag) + ' (' + gce.transparencyIndex + ')');
+            gceTable.row('Transparent', transText);
             gceTable.row('Wait for user input', formatter.boolean(gce.userInput));
         } else {
             domGcePanel.hide();
