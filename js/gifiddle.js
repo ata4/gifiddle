@@ -515,9 +515,9 @@ function GifiddleInfo(gifiddle) {
     var pteTable = new Table(domPtePanel.find('table'));
     var statsTable = new Table(domStatsPanel.find('table'));
 
-    var domCheckboxShowInfoRaw = $('#checkbox-show-info');
+    var domCheckboxShowInfo = $('#checkbox-show-info');
     
-    domCheckboxShowInfoRaw.on('change', function(event) {
+    domCheckboxShowInfo.on('change', function(event) {
         if (event.target.checked) {
             domSidebar.fadeIn();
             if (framePrev !== null) {
@@ -529,12 +529,6 @@ function GifiddleInfo(gifiddle) {
             domSidebar.fadeOut();
         }
     });
-    
-    if (domCheckboxShowInfoRaw.prop('checked')) {
-        domSidebar.fadeIn();
-    } else {
-        domSidebar.fadeOut();
-    }
     
     var formatter = {
         byteSize: function(bytes, si) {
@@ -816,33 +810,35 @@ function GifiddleInfo(gifiddle) {
 
         imgTable.empty();
         
-        var img = frame.img;
-        if (img) {
-            domImgPanel.show();
-            
-            imgTable.row('Index', frameIndex);
-            imgTable.row('Size', img.width + 'x' + img.height);
-            imgTable.row('Position', img.topPos + 'x' + img.leftPos);
-            imgTable.row('Interlaced', formatter.boolean(img.interlaced));
-            
-            imgTable.row();
-            imgTable.col('Local color table');
-            
-            // generating a HTML color table is pretty expensive, better cache
-            // it for every frame
-            if (!domColorTables[frameIndex]) {
-                domColorTables[frameIndex] = buildColorTable(img.lct, img.lctFlag, img.lctSortFlag);
-            }
-
-            imgTable.col(domColorTables[frameIndex]);
-            
-            imgTable.row('Compressed size', formatter.byteSize(img.lzwSize));
-            imgTable.row('Uncompressed size', formatter.byteSize(img.width * img.height));
-            imgTable.row('Compression ratio', formatter.compressRatio(img.lzwSize, img.width * img.height));
-            imgTable.row('LZW min. code size', img.lzwMinCodeSize);
-        } else {
+        if (typeof frame.img === 'undefined') {
             domImgPanel.hide();
+            return;
         }
+        
+        var img = frame.img;
+    
+        domImgPanel.show();
+        
+        imgTable.row('Index', frameIndex);
+        imgTable.row('Size', img.width + 'x' + img.height);
+        imgTable.row('Position', img.topPos + 'x' + img.leftPos);
+        imgTable.row('Interlaced', formatter.boolean(img.interlaced));
+        
+        imgTable.row();
+        imgTable.col('Local color table');
+        
+        // generating a HTML color table is pretty expensive, better cache
+        // it for every frame
+        if (!domColorTables[frameIndex]) {
+            domColorTables[frameIndex] = buildColorTable(img.lct, img.lctFlag, img.lctSortFlag);
+        }
+
+        imgTable.col(domColorTables[frameIndex]);
+        
+        imgTable.row('Compressed size', formatter.byteSize(img.lzwSize));
+        imgTable.row('Uncompressed size', formatter.byteSize(img.width * img.height));
+        imgTable.row('Compression ratio', formatter.compressRatio(img.lzwSize, img.width * img.height));
+        imgTable.row('LZW min. code size', img.lzwMinCodeSize);
         
         pteTable.empty();
 
@@ -868,7 +864,7 @@ function GifiddleInfo(gifiddle) {
 
             gceTable.row('Delay', formatter.delayTime(gce.delayTime));
             gceTable.row('Disposal method', formatter.disposalMethod(gce.disposalMethod));
-            gceTable.row('Transparent', formatter.boolean(gce.transparencyFlag));
+            gceTable.row('Transparent', formatter.boolean(gce.transparencyFlag) + ' (' + gce.transparencyIndex + ')');
             gceTable.row('Wait for user input', formatter.boolean(gce.userInput));
         } else {
             domGcePanel.hide();
@@ -884,6 +880,11 @@ function GifiddleInfo(gifiddle) {
             updateHeader(gifFile);
             updateStats(gifFile);
             updateXMP(gifFile);
+            
+            // show sidebar if previously enabled
+            if (domCheckboxShowInfo.prop('checked')) {
+                domSidebar.show();
+            }
         });
         
         gifPlayer.events.on('update', function() {
